@@ -1,0 +1,85 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: NftMarket
+    network: localhost
+    source:
+      address: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"
+      abi: NftMarket
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - NftListing
+      abis:
+        - name: NftMarket
+          file: ./abis/NftMarket.json
+      eventHandlers:
+        - event: DeList(indexed address,uint256)
+          handler: handleDeList
+        - event: Listing(indexed address,uint256,address,uint256)
+          handler: handleListing
+      file: ./src/nft-market.ts
+  - kind: ethereum
+    name: NftFactory
+    network: localhost
+    source:
+      address: "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6"
+      abi: NftFactory
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - NftCreated
+      abis:
+        - name: NftFactory
+          file: ./abis/NftFactory.json
+      eventHandlers:
+        - event: NftCreated(indexed address,indexed address)
+          handler: handleNftCreated
+      file: ./src/nft-factory.ts
+  - kind: ethereum
+    name: NBToken
+    network: localhost
+    source:
+      address: "0x0165878A594ca255338adfa4d48449f69242Eb8F"
+      abi: NBToken
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - NbtTransfer
+      abis:
+        - name: NBToken
+          file: ./abis/NBToken.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: ./src/nbt-token.ts
+templates:
+  - name: NftCollection
+    kind: ethereum/contract
+    network: localhost
+    source:
+      abi: NftCollection
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/nft-collection.ts
+      entities:
+        - NftTransfer
+        - NftTracer
+      abis:
+        - name: NftCollection
+          file: ./abis/NftCollection.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer

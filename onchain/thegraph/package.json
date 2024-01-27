@@ -1,0 +1,17 @@
+{
+  "name": "nft-bazaar",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ nft-bazaar",
+    "create-local": "graph create --node http://localhost:8020/ nft-bazaar",
+    "remove-local": "graph remove --node http://localhost:8020/ nft-bazaar",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 nft-bazaar",
+    "test": "graph test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "matchstick-as": "0.5.0"
+  }
+}

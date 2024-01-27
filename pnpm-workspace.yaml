@@ -1,0 +1,4 @@
+packages:
+  - onchain
+  - server
+  - web

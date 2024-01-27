@@ -1,0 +1,18 @@
+{
+  "name": "nft-bazaar",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "preinstall": "npx -y only-allow pnpm",
+    "web": "pnpm --filter @nft-bazaar/web run dev ",
+    "server": "pnpm --filter @nft-bazaar/server run dev "
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "^3.2.4"
+  }
+}

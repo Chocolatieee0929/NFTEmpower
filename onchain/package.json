@@ -1,0 +1,46 @@
+{
+  "name": "@nft-bazaar/onchain",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "testnet-deploy": "hardhat deploy --network sepolia --verbose",
+    "localnet": "anvil --port 8545 --state ./localnet_state --host 0.0.0.0",
+    "localnet:deploy": "hardhat deploy --network localhost --verbose --export forapp/localhost/artifacts.json --tags xxx",
+    "graph-test": "graph test",
+    "graph-codegen": "cd ./subgraph && graph codegen",
+    "graph-build:local": "cd ./subgraph && graph build --network localhost",
+    "graph-create-local": "graph create --node http://127.0.0.1:8020 NftBazaar/sub",
+    "graph-deploy-local": "cd ./subgraph && graph deploy --ipfs http://127.0.0.1:5001 --node http://127.0.0.1:8020 NftBazaar/sub --network localhost",
+    "graph-local-clean": "docker-compose down -v && docker-compose rm -v && rm -rf data/ipfs data/postgres"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "0.67.2",
+    "@graphprotocol/graph-ts": "0.32.0",
+    "@graphprotocol/hardhat-graph": "github:wahack/hardhat-graph#build",
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-foundry": "^1.1.1",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "@typechain/ethers-v6": "^0.5.0",
+    "@typechain/hardhat": "^9.0.0",
+    "chai": "^4.2.0",
+    "ethers": "^6.4.0",
+    "hardhat": "^2.14.0",
+    "hardhat-deploy": "^0.11.45",
+    "hardhat-deploy-ethers": "^0.4.1",
+    "hardhat-gas-reporter": "^1.0.8",
+    "solidity-coverage": "^0.8.0",
+    "typechain": "^8.3.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.1",
+    "@openzeppelin/contracts-upgradeable": "^5.0.1"
+  }
+}
