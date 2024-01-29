@@ -11,11 +11,14 @@ import AppBar from '@mui/material/AppBar';
 import Stack from '@mui/material/Stack';
 import { Link } from 'react-router-dom';
 import Web3ConnectButton from './Web3ConnectButton';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 export default function AppLayout({ children }) {
   //  use mui@5 to build website layout. header, center is page content area, footer. header contains logo, menu, login btn .center contains page content. footer contains some links.
   return (
-    <div>
+    <QueryClientProvider client={queryClient}>
       <Container maxWidth={false} style={{ padding: 0 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
           <AppBar position="static" style={{ padding: '10px 0' }}>
@@ -28,13 +31,12 @@ export default function AppLayout({ children }) {
               <Grid xs>
                 <Stack direction="row" spacing={2}>
                   <Button variant="text" style={{ color: '#fff' }} component={Link} to={'/'}>
-                  Market
-
+                    Market
                   </Button>
                   {/* <Button variant="text" style={{ color: '#fff' }} href="/profile">
                     Profile
                   </Button> */}
-                  <Button variant="text" style={{ color: '#fff' }} component={Link} to={'/create-nft'}>
+                  <Button variant="text" style={{ color: '#fff' }} component={Link} to={'/collection/create'}>
                     Mint
                   </Button>
                 </Stack>
@@ -49,7 +51,7 @@ export default function AppLayout({ children }) {
           </Box>
         </Box>
       </Container>
-    </div>
+    </QueryClientProvider>
   );
 }
 

@@ -1,8 +1,6 @@
 node_modules
 .DS_Store
 *.db
-node_modules
-.env
 
 # Hardhat files
 /cache
