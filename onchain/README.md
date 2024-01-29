@@ -1,6 +1,7 @@
 ### combine foundry in
 
 npx hardhat init-foundry
+forge install
 
 ### start a local network
 
