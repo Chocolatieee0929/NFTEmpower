@@ -1,0 +1,66 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: NftFactory
+    network: sepolia
+    source:
+      abi: NftFactory
+      address: "0x8D5d51a4d5B5941b74a3aA354159262CfcA92EA6"
+      startBlock: 5183886
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - NftOwner
+      abis:
+        - name: NftFactory
+          file: ./abis/NftFactory.json
+      eventHandlers:
+        - event: NftCreated(indexed address,indexed address)
+          handler: handleNftCreated
+      file: ./src/nft-factory.ts
+  - kind: ethereum
+    name: NBToken
+    network: sepolia
+    source:
+      abi: NBToken
+      address: "0xd0f56A31996d721221FF98afc7d17A320B9F5411"
+      startBlock: 5183854
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - NbtTransfer
+      abis:
+        - name: NBToken
+          file: ./abis/NBToken.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: ./src/nbt-token.ts
+templates:
+  - name: NftCollection
+    kind: ethereum/contract
+    network: sepolia
+    source:
+      abi: NftCollection
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - NftTransfer
+        - NftTracer
+      abis:
+        - name: NftCollection
+          file: ./abis/NftCollection.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/nft-collection.ts
