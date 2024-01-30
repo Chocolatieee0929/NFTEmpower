@@ -6,26 +6,29 @@ import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { encodePacked, parseEther, parseUnits, keccak256 } from 'viem';
+import { useEffect } from 'react';
 
 const { default: ContractsInterface } = await import(`../../contracts/${import.meta.env.VITE_NETWORK}.js`);
-import { useAccount, useReadContract, useWriteContract } from 'wagmi';
+import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
 console.log('ContractsInterface', ContractsInterface);
 
 export default function CollectionCreate() {
   const { data: hash, isPending, writeContract } = useWriteContract();
+  const {
+    data: nftAddress,
+    isLoading,
+    status,
+  } = useWaitForTransactionReceipt({
+    hash,
+  });
   const { address } = useAccount();
   function handleSubmit(event) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     // eslint-disable-next-line no-console
-    console.log({
-      collectionName: data.get('collectionName'),
-      collectionSymbol: data.get('collectionSymbol'),
-      collectionSupply: parseUnits(data.get('collectionSupply')),
-      collectionMintPrice: parseEther(data.get('collectionMintPrice')),
-    });
-    console.log(ContractsInterface.NftFactory.abi);
+
+    // console.log(ContractsInterface.NftFactory.abi);
     writeContract(
       {
         address: ContractsInterface.NftFactory.address,
@@ -65,6 +68,10 @@ export default function CollectionCreate() {
       }
     );
   }
+
+  useEffect(() => {
+    console.log(status, nftAddress);
+  }, [status, nftAddress]);
 
   return (
     <Box
@@ -124,7 +131,7 @@ export default function CollectionCreate() {
             />
           </Grid> */}
         </Grid>
-        {!isPending ? (
+        {!isPending && !isLoading ? (
           <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
             Start Create
           </Button>

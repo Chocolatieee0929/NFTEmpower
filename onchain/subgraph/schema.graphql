@@ -34,3 +34,31 @@ type Transfer @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
+type NftCreated @entity(immutable: true) {
+  id: Bytes!
+  nftAddress: Bytes! # address
+  owner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type NftTracer @entity(immutable: false) {
+  id: String!
+  nft: Bytes! # address
+  owner: Bytes! # address
+  from: Bytes! # address
+  tokenId: BigInt! # uint256
+  isSell: Boolean # bool
+  price: BigInt # uint256
+}
+type NftTransfer @entity(immutable: true) {
+  id: Bytes!
+  nft: Bytes! # address
+  from: Bytes! # address
+  to: Bytes! # address
+  tokenId: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

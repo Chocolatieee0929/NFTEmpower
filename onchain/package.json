@@ -12,7 +12,7 @@
     "graph-codegen": "cd ./subgraph && graph codegen",
     "graph-build:sepolia": "cd ./subgraph && graph codegen && graph build --network sepolia",
     "graph-create:local": "graph create --node http://127.0.0.1:8020 NftBazaar/sub",
-    "graph-deploy:sepolia": "cd ./subgraph && graph deploy nft-bazaar --network sepolia",
+    "graph-deploy:sepolia": "cd ./subgraph && graph deploy nftempower --network sepolia",
     "graph-local-clean": "docker-compose down -v && docker-compose rm -v && rm -rf data/ipfs data/postgres",
     "graph-deploy-localllljsdfllll": "cd ./subgraph && graph deploy --ipfs http://127.0.0.1:5001 --node http://127.0.0.1:8020 nft-bazaar --network localhost"
   },

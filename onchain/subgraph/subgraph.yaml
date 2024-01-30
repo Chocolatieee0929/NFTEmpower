@@ -33,3 +33,43 @@ dataSources:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
       file: ./src/nb-token.ts
+  - kind: ethereum
+    name: NftFactory
+    network: sepolia
+    source:
+      address: "0x8D5d51a4d5B5941b74a3aA354159262CfcA92EA6"
+      abi: NftFactory
+      startBlock: 5183886
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - NftCreated
+      abis:
+        - name: NftFactory
+          file: ./abis/NftFactory.json
+      eventHandlers:
+        - event: NftCreated(indexed address,indexed address)
+          handler: handleNftCreated
+      file: ./src/nft-factory.ts
+templates:
+  - name: NftCollection
+    kind: ethereum/contract
+    network: sepolia
+    source:
+      abi: NftCollection
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/nft-collection.ts
+      entities:
+        - NftTransfer
+        - NftTracer
+      abis:
+        - name: NftCollection
+          file: ./abis/NftCollection.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
