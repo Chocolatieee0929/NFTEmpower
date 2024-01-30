@@ -12,11 +12,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     log: true,
   });
   // add this contract to subgraph
-  // await hre.run('graph', {
-  //   contractName: 'NftFactory',
-  //   address: NftFactory.address,
-  //   abi: NftFactory.abi,
-  //   blockNumber: NftFactory.receipt.blockNumber,
-  // });
+  await hre.run('graph', {
+    contractName: 'NftFactory',
+    address: NftFactory.address,
+    abi: NftFactory.abi,
+    mergeEntities: false,
+    startBlock: NftFactory.receipt.blockNumber,
+  });
 };
 module.exports.tags = ['NftFactory'];

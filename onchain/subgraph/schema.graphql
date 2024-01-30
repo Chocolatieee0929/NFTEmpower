@@ -14,7 +14,7 @@ type NftTransfer @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
-type NftCreated @entity(immutable: true) {
+type NftOwner @entity(immutable: true) {
   id: Bytes!
   nft: Bytes! # address
   owner: Bytes! # address

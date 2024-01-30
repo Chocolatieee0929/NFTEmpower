@@ -1,6 +1,6 @@
 import { BigInt } from '@graphprotocol/graph-ts';
 import { NftCreated as NftCreatedEvent } from '../generated/NftFactory/NftFactory';
-import { NftCreated } from '../generated/schema';
+import { NftOwner } from '../generated/schema';
 import { NftCollection } from '../generated/templates';
 
 export function handleNftCreated(event: NftCreatedEvent): void {
@@ -9,10 +9,9 @@ export function handleNftCreated(event: NftCreatedEvent): void {
   console.log('-----------------------------');
   console.log('handleNftCreated:');
   console.log('-----------------------------');
-  let entity = new NftCreated(event.transaction.hash.concatI32(event.logIndex.toI32()));
+  let entity = new NftOwner(event.transaction.hash.concatI32(event.logIndex.toI32()));
   console.log('handleNftCreated: NftCreated');
 
-  NftCollection.create(event.params.nftAddress);
   console.log('handleNftCreated: NftCollection');
   // Entities only exist after they have been saved to the store;
   // `null` checks allow to create entities on demand
@@ -31,6 +30,7 @@ export function handleNftCreated(event: NftCreatedEvent): void {
   console.log('handleNftCreated: save');
 
   entity.save();
+  NftCollection.create(event.params.nftAddress);
 
   // Note: If a handler doesn't require existing field values, it is faster
   // _not_ to load the entity from the store. Instead, create it fresh with

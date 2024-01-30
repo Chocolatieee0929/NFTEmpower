@@ -26,7 +26,7 @@ export default function CollectionCreate() {
       collectionMintPrice: parseEther(data.get('collectionMintPrice')),
     });
     console.log(ContractsInterface.NftFactory.abi);
-    const nft = writeContract(
+    writeContract(
       {
         address: ContractsInterface.NftFactory.address,
         abi: ContractsInterface.NftFactory.abi,
@@ -64,7 +64,6 @@ export default function CollectionCreate() {
         },
       }
     );
-    console.log('nft:', nft);
   }
 
   return (
@@ -77,7 +76,7 @@ export default function CollectionCreate() {
       }}
     >
       <Typography component="h3" variant="h5">
-        Create Your NFT Collection
+        {isPending}Create Ysour NFT Collection{hash}
       </Typography>
       <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
         <Grid container spacing={2} maxWidth={400}>

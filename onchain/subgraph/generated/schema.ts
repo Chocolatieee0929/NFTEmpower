@@ -229,7 +229,7 @@ export class NftTransfer extends Entity {
   }
 }
 
-export class NftCreated extends Entity {
+export class NftOwner extends Entity {
   constructor(id: Bytes) {
     super();
     this.set("id", Value.fromBytes(id));
@@ -237,26 +237,24 @@ export class NftCreated extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save NftCreated entity without an ID");
+    assert(id != null, "Cannot save NftOwner entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.BYTES,
-        `Entities of type NftCreated must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`,
+        `Entities of type NftOwner must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`,
       );
-      store.set("NftCreated", id.toBytes().toHexString(), this);
+      store.set("NftOwner", id.toBytes().toHexString(), this);
     }
   }
 
-  static loadInBlock(id: Bytes): NftCreated | null {
-    return changetype<NftCreated | null>(
-      store.get_in_block("NftCreated", id.toHexString()),
+  static loadInBlock(id: Bytes): NftOwner | null {
+    return changetype<NftOwner | null>(
+      store.get_in_block("NftOwner", id.toHexString()),
     );
   }
 
-  static load(id: Bytes): NftCreated | null {
-    return changetype<NftCreated | null>(
-      store.get("NftCreated", id.toHexString()),
-    );
+  static load(id: Bytes): NftOwner | null {
+    return changetype<NftOwner | null>(store.get("NftOwner", id.toHexString()));
   }
 
   get id(): Bytes {
