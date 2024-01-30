@@ -6,7 +6,7 @@ import "./BaseScript.s.sol";
 
 import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 
-contract CounterScript is BaseScript {
+contract MarketV1 is BaseScript {
     function run() public broadcaster {
         Options memory opts;
         //   opts.unsafeSkipAllChecks = true;
