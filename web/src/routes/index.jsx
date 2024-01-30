@@ -1,7 +1,7 @@
 import Home from './Home';
-import Profile from './Profile';
 import Layout from '../components/Layout';
-import CreateNft from './CreateNft';
+import CollectionCreate from './collection/create';
+import CollectionList from './collection/list';
 
 export default [
   {
@@ -13,18 +13,18 @@ export default [
     ),
   },
   {
-    path: '/profile',
+    path: '/collection/create',
     element: (
       <Layout>
-        <Profile />
+        <CollectionCreate />
       </Layout>
     ),
   },
   {
-    path: '/create-collection',
+    path: '/collection/list',
     element: (
       <Layout>
-        <CreateNft />
+        <CollectionList></CollectionList>
       </Layout>
     ),
   },
