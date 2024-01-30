@@ -9,5 +9,5 @@
     "editor.defaultFormatter": "NomicFoundation.hardhat-solidity"
   },
   "solidity.defaultCompiler": "localFile",
-  "solidity.compileUsingRemoteVersion": "latest"
+  "solidity.compileUsingRemoteVersion": "v0.8.24+commit.e11b9ed9"
 }

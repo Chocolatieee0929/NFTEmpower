@@ -2,3 +2,11 @@
 	path = lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
 	push = none
+[submodule "lib/solidity-stringutils"]
+	path = lib/solidity-stringutils
+	url = https://github.com/Arachnid/solidity-stringutils
+	push = none
+[submodule "lib/openzeppelin-foundry-upgrades"]
+	path = lib/openzeppelin-foundry-upgrades
+	url = https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades
+	push = none

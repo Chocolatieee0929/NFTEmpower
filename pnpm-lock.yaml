@@ -20,6 +20,9 @@ importers:
       '@openzeppelin/contracts-upgradeable':
         specifier: ^5.0.1
         version: 5.0.1(@openzeppelin/contracts@5.0.1)
+      openzeppelin-foundry-upgrades:
+        specifier: github:OpenZeppelin/openzeppelin-foundry-upgrades
+        version: github.com/OpenZeppelin/openzeppelin-foundry-upgrades/1daeea8f74ed92cdb2bbffe605267b4cef31b14c
     devDependencies:
       '@graphprotocol/graph-cli':
         specifier: 0.67.2
@@ -14562,3 +14565,9 @@ packages:
     transitivePeerDependencies:
       - debug
     dev: true
+
+  github.com/OpenZeppelin/openzeppelin-foundry-upgrades/1daeea8f74ed92cdb2bbffe605267b4cef31b14c:
+    resolution: {tarball: https://codeload.github.com/OpenZeppelin/openzeppelin-foundry-upgrades/tar.gz/1daeea8f74ed92cdb2bbffe605267b4cef31b14c}
+    name: openzeppelin-foundry-upgrades
+    version: 0.0.0
+    dev: false
