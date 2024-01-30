@@ -6,9 +6,14 @@ import { NftCollection } from '../generated/templates';
 export function handleNftCreated(event: NftCreatedEvent): void {
   // Entities can be loaded from the store using a string ID; this ID
   // needs to be unique across all entities of the same type
+  console.log('-----------------------------');
+  console.log('handleNftCreated:');
+  console.log('-----------------------------');
   let entity = new NftCreated(event.transaction.hash.concatI32(event.logIndex.toI32()));
+  console.log('handleNftCreated: NftCreated');
 
   NftCollection.create(event.params.nftAddress);
+  console.log('handleNftCreated: NftCollection');
   // Entities only exist after they have been saved to the store;
   // `null` checks allow to create entities on demand
 
@@ -23,6 +28,8 @@ export function handleNftCreated(event: NftCreatedEvent): void {
   entity.blockTimestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
   // Entities can be written to the store with `.save()`
+  console.log('handleNftCreated: save');
+
   entity.save();
 
   // Note: If a handler doesn't require existing field values, it is faster

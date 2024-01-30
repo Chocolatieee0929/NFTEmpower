@@ -26,7 +26,7 @@ export default function CollectionCreate() {
       collectionMintPrice: parseEther(data.get('collectionMintPrice')),
     });
     console.log(ContractsInterface.NftFactory.abi);
-    writeContract(
+    const nft = writeContract(
       {
         address: ContractsInterface.NftFactory.address,
         abi: ContractsInterface.NftFactory.abi,
@@ -64,6 +64,7 @@ export default function CollectionCreate() {
         },
       }
     );
+    console.log('nft:', nft);
   }
 
   return (

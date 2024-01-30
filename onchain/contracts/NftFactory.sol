@@ -4,6 +4,9 @@ pragma solidity ^0.8.20;
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {NftCollection} from './NftCollection.sol';
 
+/**
+ * 创建 nft 的工厂合约，供用户端调用创建 nftcollection
+ */
 contract NftFactory {
   address private _nftImplementationAddress;
   event NftCreated(address indexed nftAddress, address indexed owner);

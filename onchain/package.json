@@ -41,7 +41,6 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.0.1",
-    "@openzeppelin/contracts-upgradeable": "^5.0.1",
-    "openzeppelin-foundry-upgrades": "github:OpenZeppelin/openzeppelin-foundry-upgrades"
+    "@openzeppelin/contracts-upgradeable": "^5.0.1"
   }
 }

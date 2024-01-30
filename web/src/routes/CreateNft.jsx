@@ -112,12 +112,13 @@ export default function CreateNft() {
         },
       }
     );
-    writeContract({
+    const nftAddress = writeContract({
       abi: ContractsInterface.MyNft.abi,
       address: ContractsInterface.MyNft.address,
       functionName: 'mint',
       args: [address, 'ipfs://1111'],
     });
+    console.log(nftAddress);
   }
 
   async function handleTabChange(e, value) {
