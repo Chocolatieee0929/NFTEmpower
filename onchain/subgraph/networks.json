@@ -1,13 +1,12 @@
 {
-  "localhost": {
-    "NftMarket": {
-      "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"
+  "sepolia": {
+    "NBToken": {
+      "address": "0xd0f56A31996d721221FF98afc7d17A320B9F5411",
+      "startBlock": 5183854
     },
     "NftFactory": {
-      "address": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6"
-    },
-    "NBToken": {
-      "address": "0x0165878A594ca255338adfa4d48449f69242Eb8F"
+      "address": "0x8D5d51a4d5B5941b74a3aA354159262CfcA92EA6",
+      "startBlock": 5183886
     }
   }
 }

@@ -132,9 +132,12 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.17.19
         version: 5.17.19(react@18.2.0)
+      '@wagmi/core':
+        specifier: ^2.6.3
+        version: 2.6.3(@types/react@18.2.48)(react@18.2.0)(viem@2.5.0)
       '@web3modal/wagmi':
         specifier: 4.0.0-alpha.3
-        version: 4.0.0-alpha.3(@types/react@18.2.48)(@wagmi/connectors@4.1.10)(@wagmi/core@2.6.1)(viem@2.5.0)
+        version: 4.0.0-alpha.3(@types/react@18.2.48)(@wagmi/connectors@4.1.10)(@wagmi/core@2.6.3)(viem@2.5.0)
       axios:
         specifier: ^1.6.5
         version: 1.6.5
@@ -5370,8 +5373,76 @@ packages:
       - zod
     dev: false
 
+  /@wagmi/connectors@4.1.10(@types/react@18.2.48)(@wagmi/core@2.6.3)(react-dom@18.2.0)(react-native@0.73.2)(react@18.2.0)(viem@2.5.0):
+    resolution: {integrity: sha512-sevgZl9aTmFUb/IZcy9Jou+e/QM3LPjV+rm31aMFa8b5aRnQQoZ1KmDmy+v4rBR5jzfVErPDjh1/VdcMO5bmXA==}
+    peerDependencies:
+      '@wagmi/core': 2.6.1
+      typescript: '>=5.0.4'
+      viem: 2.x
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      '@coinbase/wallet-sdk': 3.9.1
+      '@metamask/sdk': 0.14.1(@types/react@18.2.48)(react-dom@18.2.0)(react-native@0.73.2)(react@18.2.0)
+      '@safe-global/safe-apps-provider': 0.18.1
+      '@safe-global/safe-apps-sdk': 8.1.0
+      '@wagmi/core': 2.6.3(@types/react@18.2.48)(react@18.2.0)(viem@2.5.0)
+      '@walletconnect/ethereum-provider': 2.11.0(@types/react@18.2.48)(react@18.2.0)
+      '@walletconnect/modal': 2.6.2(@types/react@18.2.48)(react@18.2.0)
+      viem: 2.5.0
+    transitivePeerDependencies:
+      - '@azure/app-configuration'
+      - '@azure/cosmos'
+      - '@azure/data-tables'
+      - '@azure/identity'
+      - '@azure/keyvault-secrets'
+      - '@azure/storage-blob'
+      - '@capacitor/preferences'
+      - '@netlify/blobs'
+      - '@planetscale/database'
+      - '@react-native-async-storage/async-storage'
+      - '@types/react'
+      - '@upstash/redis'
+      - '@vercel/kv'
+      - bufferutil
+      - encoding
+      - react
+      - react-dom
+      - react-native
+      - rollup
+      - supports-color
+      - utf-8-validate
+      - zod
+    dev: false
+
   /@wagmi/core@2.6.1(@types/react@18.2.48)(react@18.2.0)(viem@2.5.0):
     resolution: {integrity: sha512-8uE4cpkGqHObjFcDUU6ZGqn9KiOO2wsJOKZ+bXevLOXe2a6M268vOUKJUM2d6/Whn4aBFEyMcX8ESdLuySS78w==}
+    peerDependencies:
+      '@tanstack/query-core': '>=5.0.0'
+      typescript: '>=5.0.4'
+      viem: 2.x
+    peerDependenciesMeta:
+      '@tanstack/query-core':
+        optional: true
+      typescript:
+        optional: true
+    dependencies:
+      eventemitter3: 5.0.1
+      mipd: 0.0.5
+      viem: 2.5.0
+      zustand: 4.4.1(@types/react@18.2.48)(react@18.2.0)
+    transitivePeerDependencies:
+      - '@types/react'
+      - bufferutil
+      - immer
+      - react
+      - utf-8-validate
+      - zod
+    dev: false
+
+  /@wagmi/core@2.6.3(@types/react@18.2.48)(react@18.2.0)(viem@2.5.0):
+    resolution: {integrity: sha512-hHvJkXFqfj56nAD0SH5bAHYxBItUBDIn6yGUBguMu121v6R4NxhwciEeff56lSjnKhmXjaWdJCEJ9C1YwkmDVw==}
     peerDependencies:
       '@tanstack/query-core': '>=5.0.0'
       typescript: '>=5.0.4'
@@ -5863,7 +5934,7 @@ packages:
       qrcode: 1.5.3
     dev: false
 
-  /@web3modal/wagmi@4.0.0-alpha.3(@types/react@18.2.48)(@wagmi/connectors@4.1.10)(@wagmi/core@2.6.1)(viem@2.5.0):
+  /@web3modal/wagmi@4.0.0-alpha.3(@types/react@18.2.48)(@wagmi/connectors@4.1.10)(@wagmi/core@2.6.3)(viem@2.5.0):
     resolution: {integrity: sha512-NPPdDjoPCIk5CNqv3SnposspMhD8OsJRQmEaw043jvs+RLSdgKhdTAVy4Ns//Q4aNxobec5usS4KUyNe5Iz13A==}
     peerDependencies:
       '@wagmi/connectors': '>=4.0.0'
@@ -5879,8 +5950,8 @@ packages:
       vue:
         optional: true
     dependencies:
-      '@wagmi/connectors': 4.1.10(@types/react@18.2.48)(@wagmi/core@2.6.1)(react-dom@18.2.0)(react-native@0.73.2)(react@18.2.0)(viem@2.5.0)
-      '@wagmi/core': 2.6.1(@types/react@18.2.48)(react@18.2.0)(viem@2.5.0)
+      '@wagmi/connectors': 4.1.10(@types/react@18.2.48)(@wagmi/core@2.6.3)(react-dom@18.2.0)(react-native@0.73.2)(react@18.2.0)(viem@2.5.0)
+      '@wagmi/core': 2.6.3(@types/react@18.2.48)(react@18.2.0)(viem@2.5.0)
       '@web3modal/polyfills': 4.0.0-alpha.3
       '@web3modal/scaffold': 4.0.0-alpha.3(@types/react@18.2.48)(react@18.2.0)
       '@web3modal/scaffold-react': 4.0.0-alpha.3(@types/react@18.2.48)(react-dom@18.2.0)(react@18.2.0)

@@ -45,7 +45,7 @@ const localnet = {
 const config = defaultWagmiConfig({
   projectId,
   metadata,
-  chains: [localnet, sepolia],
+  chains: [sepolia],
 });
 
 // 3. Create modal

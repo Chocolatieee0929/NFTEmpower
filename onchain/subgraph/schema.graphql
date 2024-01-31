@@ -1,33 +1,43 @@
-type ExampleEntity @entity {
+type Approval @entity(immutable: true) {
   id: Bytes!
-  count: BigInt!
-  nftAddress: Bytes! # address
-  tokenId: BigInt! # uint256
+  owner: Bytes! # address
+  spender: Bytes! # address
+  value: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
 }
-type NftTransfer @entity(immutable: true) {
+
+type EIP712DomainChanged @entity(immutable: true) {
   id: Bytes!
-  nft: Bytes! # address
+
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OwnershipTransferred @entity(immutable: true) {
+  id: Bytes!
+  previousOwner: Bytes! # address
+  newOwner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Transfer @entity(immutable: true) {
+  id: Bytes!
   from: Bytes! # address
   to: Bytes! # address
-  tokenId: BigInt! # uint256
+  value: BigInt! # uint256
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
 type NftCreated @entity(immutable: true) {
   id: Bytes!
-  nft: Bytes! # address
+  nftAddress: Bytes! # address
   owner: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type NbtTransfer @entity(immutable: true) {
-  id: Bytes!
-  from: Bytes! # address
-  to: Bytes! # address
-  value: BigInt! # uint256
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
@@ -42,11 +52,13 @@ type NftTracer @entity(immutable: false) {
   isSell: Boolean # bool
   price: BigInt # uint256
 }
-
-type NftListing @entity(immutable: true) {
-  id: String!
+type NftTransfer @entity(immutable: true) {
+  id: Bytes!
   nft: Bytes! # address
-  owner: Bytes! # address
+  from: Bytes! # address
+  to: Bytes! # address
   tokenId: BigInt! # uint256
-  price: BigInt # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
 }

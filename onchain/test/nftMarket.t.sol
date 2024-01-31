@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {BaseTest} from "./BaseTest.t.sol";
-import {NftMarket} from "../contracts/NftMarketV2.sol";
+import {NftMarket} from "../contracts/NftMarket.sol";
 import {NBToken} from "../contracts/NBToken.sol";
 import {MyNft} from "../contracts/MyNft.sol";
 import {console2} from "forge-std/Test.sol";

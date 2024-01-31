@@ -17,6 +17,7 @@
     "@mui/material": "^5.15.6",
     "@nft-bazaar/onchain": "link:../onchain",
     "@tanstack/react-query": "^5.17.19",
+    "@wagmi/core": "^2.6.3",
     "@web3modal/wagmi": "4.0.0-alpha.3",
     "axios": "^1.6.5",
     "localforage": "^1.10.0",

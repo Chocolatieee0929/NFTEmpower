@@ -32,10 +32,11 @@ module.exports = {
     deployer: 0,
   },
   subgraph: {
-    name: 'NftBazaar/sub', // Defaults to the name of the root folder of the hardhat project
-    product: 'hosted-service', // 'hosted-service'|'subgraph-studio', // Defaults to 'subgraph-studio'
-    indexEvents: false, // Defaults to false
-    allowSimpleName: false, // Defaults to `false` if product is `hosted-service` and `true` if product is `subgraph-studio`
+    name: 'nft-bazaar', // Defaults to the name of the root folder of the hardhat project
+    product: 'subgraph-studio', // 'hosted-service'|'subgraph-studio', // Defaults to 'subgraph-studio'
+    // node: 'http://127.0.0.1:8020',
+    indexEvents: true, // Defaults to false
+    allowSimpleName: true, // Defaults to `false` if product is `hosted-service` and `true` if product is `subgraph-studio`
   },
   paths: {
     subgraph: './subgraph', // Defaults to './subgraph'

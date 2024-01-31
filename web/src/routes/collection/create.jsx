@@ -6,27 +6,26 @@ import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { encodePacked, parseEther, parseUnits, keccak256 } from 'viem';
+import { useEffect } from 'react';
 
 const { default: ContractsInterface } = await import(`../../contracts/${import.meta.env.VITE_NETWORK}.js`);
-import { useAccount, useReadContract, useWriteContract } from 'wagmi';
+import { useAccount, useReadContract, useConfig, useWriteContract } from 'wagmi';
+import { waitForTransactionReceipt } from '@wagmi/core';
 
-console.log('ContractsInterface', ContractsInterface);
+// console.log('ContractsInterface', ContractsInterface);
 
 export default function CollectionCreate() {
-  const { data: hash, isPending, writeContract } = useWriteContract();
+  const { data: hash, isPending, writeContractAsync } = useWriteContract();
+  const config = useConfig();
+  console.log(config);
   const { address } = useAccount();
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     // eslint-disable-next-line no-console
-    console.log({
-      collectionName: data.get('collectionName'),
-      collectionSymbol: data.get('collectionSymbol'),
-      collectionSupply: parseUnits(data.get('collectionSupply')),
-      collectionMintPrice: parseEther(data.get('collectionMintPrice')),
-    });
-    console.log(ContractsInterface.NftFactory.abi);
-    const nft = writeContract(
+
+    // console.log(ContractsInterface.NftFactory.abi);
+    const txHash = await writeContractAsync(
       {
         address: ContractsInterface.NftFactory.address,
         abi: ContractsInterface.NftFactory.abi,
@@ -64,8 +63,19 @@ export default function CollectionCreate() {
         },
       }
     );
-    console.log('nft:', nft);
+    console.log(txHash, config);
+    const transactionReceipt = await waitForTransactionReceipt(config, {
+      hash: txHash,
+      chainId: 11155111,
+      onReplaced: (replacement) => console.log(replacement),
+    });
+    console.log('transactionReceipt', transactionReceipt);
   }
+
+  // useEffect(() => {
+  //   console.log(status, nftAddress, isSuccess, isError);
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [isSuccess, isError]);
 
   return (
     <Box
@@ -77,7 +87,7 @@ export default function CollectionCreate() {
       }}
     >
       <Typography component="h3" variant="h5">
-        Create Your NFT Collection
+        {isPending}Create Ysour NFT Collection{status}
       </Typography>
       <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
         <Grid container spacing={2} maxWidth={400}>
