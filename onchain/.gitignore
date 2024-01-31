@@ -1,6 +1,7 @@
 node_modules
 cache_forge
 out/
+lib/
 .env
 
 # Hardhat files
