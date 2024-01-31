@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "forge-std/Script.sol";
@@ -11,7 +11,7 @@ abstract contract BaseScript is Script {
         // string memory rpc = vm.envString("SEPOLIA_RPC_URL");
         // uint256 sepolia = vm.createFork(rpc);
         // vm.selectFork(sepolia);
-        deployer = vm.envAddress("DEPLOYER");
+        deployer = vm.envAddress("LOCAL_DEPLOYER");
     }
 
     function saveContract(string memory network, string memory name, address addr) public {
