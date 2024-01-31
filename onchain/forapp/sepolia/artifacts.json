@@ -1727,7 +1727,7 @@
       ]
     },
     "NftFactory": {
-      "address": "0x8D5d51a4d5B5941b74a3aA354159262CfcA92EA6",
+      "address": "0xd7734ac8886aC2C6e241371e801cd0DA095d02b5",
       "abi": [
         {
           "inputs": [
@@ -1759,6 +1759,30 @@
               "internalType": "address",
               "name": "owner",
               "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "symbol",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "maxSupply",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "mintPrice",
+              "type": "uint256"
             }
           ],
           "name": "NftCreated",

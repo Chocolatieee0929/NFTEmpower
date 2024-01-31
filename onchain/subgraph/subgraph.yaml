@@ -37,9 +37,9 @@ dataSources:
     name: NftFactory
     network: sepolia
     source:
-      address: "0x8D5d51a4d5B5941b74a3aA354159262CfcA92EA6"
       abi: NftFactory
-      startBlock: 5183886
+      address: "0xd7734ac8886aC2C6e241371e801cd0DA095d02b5"
+      startBlock: 5191257
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -50,7 +50,7 @@ dataSources:
         - name: NftFactory
           file: ./abis/NftFactory.json
       eventHandlers:
-        - event: NftCreated(indexed address,indexed address)
+        - event: NftCreated(indexed address,indexed address,string,string,uint256,uint256)
           handler: handleNftCreated
       file: ./src/nft-factory.ts
 templates:

@@ -9,7 +9,14 @@ import {NftCollection} from './NftCollection.sol';
  */
 contract NftFactory {
   address private _nftImplementationAddress;
-  event NftCreated(address indexed nftAddress, address indexed owner);
+  event NftCreated(
+    address indexed nftAddress,
+    address indexed owner,
+    string name,
+    string symbol,
+    uint256 maxSupply,
+    uint256 mintPrice
+  );
 
   constructor(address _implementation) {
     _nftImplementationAddress = _implementation;
@@ -25,7 +32,7 @@ contract NftFactory {
     // implementation = NftCollection(Clones.clone(_nftImplementationAddress));
     address clone = Clones.cloneDeterministic(_nftImplementationAddress, salt);
     NftCollection(clone).initialize(msg.sender, name, symbol, maxSupply, mintPrice);
-    emit NftCreated(clone, msg.sender);
+    emit NftCreated(clone, msg.sender, name, symbol, maxSupply, mintPrice);
     return clone;
   }
 }

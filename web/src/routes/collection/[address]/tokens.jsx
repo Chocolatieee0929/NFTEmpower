@@ -1,25 +1,23 @@
-import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
-import Divider from '@mui/material/Divider';
-import LoadingButton from '@mui/lab/LoadingButton';
 import { useState, useEffect } from 'react';
-import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
-import Tab from '@mui/material/Tab';
-import TabContext from '@mui/lab/TabContext';
-import TabList from '@mui/lab/TabList';
-import TabPanel from '@mui/lab/TabPanel';
 import axios from 'axios';
 // import NftCard from '../components/NftCard';
-import Stack from '@mui/material/Stack';
-import { useAccount, useReadContract, useWriteContract, useSignTypedData } from 'wagmi';
+import {
+  useAccount,
+  useReadContract,
+  useWriteContract,
+  useSignTypedData,
+  useWaitForTransactionReceipt,
+} from 'wagmi';
 import { get } from 'radash';
 import { formatEther, parseEther, getContract, parseUnits } from 'viem';
 import { useParams } from 'react-router-dom';
-
+import { Container, Center, Button, Text, Stack, useToast } from '@chakra-ui/react';
+import { getNft, fetchNftTokens } from '@/api/nft';
+import { useQuery } from '@tanstack/react-query';
+import TokenCard from '@/components/TokenCard';
 const { default: ContractsInterface } = await import(`../../../contracts/${import.meta.env.VITE_NETWORK}.js`);
 
-console.log(ContractsInterface);
 // async function fetchMyNfts(address) {
 //   const { data } = await axios.post(TheGraphUrl, {
 //     query: `{
@@ -39,17 +37,43 @@ export default function CollectionTokens() {
   const [transfers, setTransfers] = useState([]);
   const [myNftList, setMyNftList] = useState([]);
   const account = useAccount();
-  const { data: hash, isPending: isMinting, writeContract } = useWriteContract();
+  const { data: txHash, isPending: isTxPending, writeContractAsync } = useWriteContract();
   const { signTypedData } = useSignTypedData();
   const { nftAddress } = useParams();
-  // useEffect(() => {
-  //   fetchActivity(address).then((list) => {
-  //     setTransfers(list);
-  //   });
-  //   fetchMyNfts(address).then((list) => {
-  //     setMyNftList(list);
-  //   });
-  // }, [tabName, isMinting, address]);
+  const { error, data: nftDetail } = useQuery({
+    queryKey: ['getNft'],
+    queryFn: () => getNft(nftAddress),
+  });
+  const { data: tokenList } = useQuery({
+    queryKey: ['fetchNftTokens'],
+    queryFn: () => fetchNftTokens(nftAddress),
+  });
+  const toast = useToast();
+  const {
+    data: blockData,
+    status,
+    isLoading: isWaitReceipt,
+  } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
+
+  useEffect(() => {
+    if (status === 'error') {
+      toast({
+        title: '交易失败',
+        status: 'error',
+        position: 'top',
+      });
+    }
+    if (status === 'success') {
+      toast({
+        title: 'mint成功',
+        status: 'success',
+        position: 'top',
+      });
+      console.log(blockData);
+    }
+  }, [status]);
 
   async function Mint() {
     // signTypedData(
@@ -87,21 +111,26 @@ export default function CollectionTokens() {
     //     },
     //   }
     // );
-    const data = writeContract(
+    const data = await writeContractAsync(
       {
         abi: ContractsInterface.NftCollection.abi,
         address: nftAddress,
         functionName: 'mintNft',
         args: [account.address],
         account,
-        value: parseEther('0.0001'),
+        value: nftDetail.mintPrice,
       },
       {
         onSettled(receipt) {
           console.log(receipt);
         },
         onError(e) {
-          console.log(e);
+          // console.log(e);
+          toast({
+            status: 'error',
+            title: '交易失败',
+            description: e.message,
+          });
         },
       }
     );
@@ -113,58 +142,16 @@ export default function CollectionTokens() {
   }
 
   return (
-    <div>
-      <Container maxWidth={'sm'} style={{ padding: 0 }}>
-        <br />
-        {/* <Divider>MINT YOUR NFT</Divider> */}
-        <br />
-        <TabContext value={tabName}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <TabList onChange={handleTabChange} aria-label="lab API tabs example">
-              <Tab label="My Nft" value="MyNft" />
-              <Tab label="Activity" value="Activity" />
-            </TabList>
-          </Box>
-          <TabPanel value="MyNft">
-            <Box style={{ textAlign: 'center' }}>
-              <p>nft数量：</p>
-              {isMinting ? (
-                <LoadingButton loading variant="outlined">
-                  Minting..
-                </LoadingButton>
-              ) : (
-                <Button variant="contained" color="success" onClick={Mint}>
-                  Mint
-                </Button>
-              )}
-              <br />
-              <br />
-
-              {/* <Stack direction="row" spacing={2}>
-                {myNftList.map((item) => {
-                  return <NftCard key={item.tokenId} owner={item.owner} tokenId={item.tokenId} />;
-                })}
-              </Stack> */}
-            </Box>
-          </TabPanel>
-          <TabPanel value="Activity">
-            <ul>
-              {transfers.map((item) => {
-                return (
-                  <li key={item.blockTimestamp}>
-                    <p>From【{item.from}】</p>
-                    <p>To: 【{item.to}】</p>
-                    <p>
-                      TokenId: {item.tokenId} BlockNumber: {item.blockNumber} BlockTimestamp:{' '}
-                      {item.blockTimestamp}
-                    </p>
-                  </li>
-                );
-              })}
-            </ul>
-          </TabPanel>
-        </TabContext>
-      </Container>
-    </div>
+    <Container p="6">
+      <Center>
+        <Stack spacing={3}>
+          <Text fontSize="md">owner: {nftDetail && nftDetail.owner}</Text>
+          <Text fontSize="md">Mint Price: {nftDetail && formatEther(nftDetail.mintPrice)}</Text>
+          <Button colorScheme="green" onClick={Mint} isLoading={isWaitReceipt || isTxPending}>
+            Mint
+          </Button>
+        </Stack>
+      </Center>
+    </Container>
   );
 }

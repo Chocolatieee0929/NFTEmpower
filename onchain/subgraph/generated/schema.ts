@@ -512,6 +512,58 @@ export class NftCreated extends Entity {
     this.set("owner", Value.fromBytes(value));
   }
 
+  get name(): string {
+    let value = this.get("name");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set name(value: string) {
+    this.set("name", Value.fromString(value));
+  }
+
+  get symbol(): string {
+    let value = this.get("symbol");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set symbol(value: string) {
+    this.set("symbol", Value.fromString(value));
+  }
+
+  get mintPrice(): BigInt {
+    let value = this.get("mintPrice");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set mintPrice(value: BigInt) {
+    this.set("mintPrice", Value.fromBigInt(value));
+  }
+
+  get maxSupply(): BigInt {
+    let value = this.get("maxSupply");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set maxSupply(value: BigInt) {
+    this.set("maxSupply", Value.fromBigInt(value));
+  }
+
   get blockNumber(): BigInt {
     let value = this.get("blockNumber");
     if (!value || value.kind == ValueKind.NULL) {
@@ -641,36 +693,6 @@ export class NftTracer extends Entity {
 
   set tokenId(value: BigInt) {
     this.set("tokenId", Value.fromBigInt(value));
-  }
-
-  get isSell(): boolean {
-    let value = this.get("isSell");
-    if (!value || value.kind == ValueKind.NULL) {
-      return false;
-    } else {
-      return value.toBoolean();
-    }
-  }
-
-  set isSell(value: boolean) {
-    this.set("isSell", Value.fromBoolean(value));
-  }
-
-  get price(): BigInt | null {
-    let value = this.get("price");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBigInt();
-    }
-  }
-
-  set price(value: BigInt | null) {
-    if (!value) {
-      this.unset("price");
-    } else {
-      this.set("price", Value.fromBigInt(<BigInt>value));
-    }
   }
 }
 

@@ -30,6 +30,22 @@ export class NftCreated__Params {
   get owner(): Address {
     return this._event.parameters[1].value.toAddress();
   }
+
+  get name(): string {
+    return this._event.parameters[2].value.toString();
+  }
+
+  get symbol(): string {
+    return this._event.parameters[3].value.toString();
+  }
+
+  get maxSupply(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
+  }
+
+  get mintPrice(): BigInt {
+    return this._event.parameters[5].value.toBigInt();
+  }
 }
 
 export class NftFactory extends ethereum.SmartContract {
