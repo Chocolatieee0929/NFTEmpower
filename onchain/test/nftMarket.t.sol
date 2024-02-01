@@ -2,141 +2,141 @@
 pragma solidity ^0.8.0;
 
 import {BaseTest} from "./BaseTest.t.sol";
-import {NftMarket} from "../contracts/NftMarket.sol";
-import {NBToken} from "../contracts/NBToken.sol";
-import {MyNft} from "../contracts/MyNft.sol";
 import {console2} from "forge-std/Test.sol";
 
-contract NftMarketTest is BaseTest {
-    NBToken mytoken;
+import {NftMarket} from "../contracts/NftMarket.sol";
+import {NBToken} from "../contracts/NBToken.sol";
 
-    MyNft public myNFT;
+import {NftFactory} from "../contracts/NftFactory.sol";
+import {NftCollection} from "../contracts/NftCollection.sol";
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+
+import {SigUtils} from "./extension/SigUtils.sol";
+
+contract testCollection is NftCollection {
+    uint256 public _nextTokenId = 1;
+
+    function mint(address to) public returns (uint256) {
+        uint256 tokenId = _nextTokenId++;
+        _mint(to, tokenId);
+        return tokenId;
+    }
+}
+
+contract NftMarketTest is BaseTest {
+    NBToken public myToken;
+
     NftMarket public nftMarket;
 
-    address public nftDeployer;
+    address public deployer;
     address public lori;
     address public alice;
-    uint256 lori_fund = 1 * 10 ** 18;
+    uint256 internal alicePK;
+    uint256 lori_fund = 0.5 * 1e18;
+
+    NftFactory factory;
+    testCollection collection; // nft模板
+    testCollection nft; // nft实例
 
     function setUp() public override {
-        // NBToken = new NBToken();
+        // 创建nftMarket, 代币token
+        deployer = vm.envAddress("LOCAL_DEPLOYER");
+        vm.prank(deployer);
+        myToken = new NBToken(deployer);
+        nftMarket = new NftMarket(address(myToken));
 
-        // myNFT = new MyNft();
+        // 设立账户
+        alicePK = 0xA11CE;
+        alice = vm.addr(alicePK);
+        emit log_address(alice);
+        vm.deal(alice, 1 ether); // 1000000000000000000
+        lori = makeAddr("Lori");
+        emit log_address(lori);
+        vm.deal(lori, 1 ether); // 1000000000000000000
 
-        // vm.nftMarket = new NftMarket();
-        // nftDeployer = msg.sender; // 记录部署者的地址
+        // 创建nft模板，以及工厂合约
+        collection = new testCollection();
+        factory = new NftFactory(address(collection));
 
-        // // 设立账户
-        // alice = makeAddr("alice");
-        // emit log_address(alice);
-        // vm.deal(alice, 1 ether); // 1000000000000000000
-        // lori = makeAddr("Lori");
-        // emit log_address(lori);
-        // vm.deal(lori, 1 ether); // 1000000000000000000
+        // 创建nft实例
+        address nftAddress = CreateCollection();
+        nft = testCollection(nftAddress);
+        uint256 token1_id = nft.mint(alice);
+        console2.log("Alice mint first NFT which the tokenid is ", token1_id);
+        uint256 token2_id = nft.mint(alice);
+        console2.log("Alice mint second NFT which the tokenid is ", token2_id);
 
-        // // 铸造NFT
-        // uint256 token1_id = myNFT.mint(alice, "111");
-        // console2.log("Alice mint first NFT which the tokenid is ", token1_id);
-        // uint256 token2_id = myNFT.mint(alice, "222");
-        // console2.log("Alice mint second NFT which the tokenid is ", token2_id);
-
-        // // 给Lori转钱，用来买资金
-        // // vm.prank(tokenAddress);
-        // // token.approve(lori, 1 * 10 ** 18);
-        // mytoken.transfer(lori, lori_fund);
-        // uint256 LoriBalance = mytoken.balanceOf(lori);
-        // console2.log("Lor address:", lori, "   balance:", LoriBalance);
+        // 给Lori转钱，用来买资金
+        vm.prank(deployer);
+        myToken.transfer(lori, lori_fund);
+        uint256 LoriBalance = myToken.balanceOf(lori);
+        console2.log("Lor address:", lori, "   balance:", LoriBalance);
     }
 
-    function test_List_Nft() public {
-        list();
+    function CreateCollection() public returns (address) {
+        bytes32 salt = keccak256(abi.encode(address(this)));
+        address nftAddress = factory.deployNft("test", "test", 10000, 10, salt);
+        console2.log("nftAddress", nftAddress);
+        return nftAddress;
     }
 
-    function list() private {
-        // uint256 _price = 10;
-        // uint256 _nftTokenId = 1;
-        // assertEq(myNFT.balanceOf(alice), 2);
-        // vm.startPrank(alice);
-        // // assert(myNFT.owner() == deployer);
+    function listSign(uint8 tokenId, uint256 price, uint256 deadline) private view returns (bytes32) {
+        /*
+        struct PermitParams {
+            address nftAddress;
+            uint8 tokenId;
+            uint256 price;
+            uint256 nonce;
+            uint256 deadline;
+        }
+        */
+        SigUtils.PermitParams memory params = SigUtils.PermitParams({
+            nftAddress: address(nft),
+            tokenId: tokenId,
+            price: price,
+            nonce: nftMarket.nonces(alice),
+            deadline: deadline
+        });
 
-        // myNFT.approve(address(nftMarket), _nftTokenId);
-
-        // bool success = nftMarket.listNft(address(nftMarket), _price, _nftTokenId);
-        // assertTrue(success);
-        // //Retrieve the NftList associated with the given _nftTokenId
-        // (address owner, uint256 price, uint256 nftTokenId) = nftMarket.nftApartment(address(nftMarket), _nftTokenId);
-
-        // // Perform assertions or further checks on nftList
-        // // For example, check if the owner and price are as expected
-        // console2.log(msg.sender);
-        // assertTrue(owner == alice, "Incorrect owner");
-        // assertTrue(price == _price, "Incorrect price");
-        // assertTrue(nftTokenId == _nftTokenId, "Incorrect NFT Token ID");
-
-        // vm.stopPrank();
+        return SigUtils.getTypeDataHash(nftMarket.DOMAIN_SEPARATOR(), params);
     }
 
-    function buy() internal {
-        // uint256 _nftTokenId = 1;
-        // vm.startPrank(lori);
-        // mytoken.approve(address(nftMarket), 10);
-        // //(bool success,) = nftMarketAddress.call(abi.encodeWithSignature("buyNFT(uint256)", _nftTokenId));
-        // (bool success,) =
-        //     address(nftMarket).call(abi.encodeWithSignature("buyNFT(address,uint256)", address(nftMarket), _nftTokenId));
-        // assertTrue(success, "test_buy failed.");
-        // assertEq(token.balanceOf(alice), 10, "Alice didn't receive 10 token!");
-        // assertEq(myNFT.balanceOf(alice), 1, "Alice still have two Nft.");
-        // assertEq(myNFT.balanceOf(lori), 1, "Lori didn't receive NFT!");
+    /// forge-config: default.fuzz.runs = 100
+    function test_fuzz_permit(uint256 price) public {
+        vm.assume(price > 0);
 
-        // mytoken.approve(address(nftMarket), 10);
-        // //(bool success,) = nftMarketAddress.call(abi.encodeWithSignature("buyNFT(uint256)", _nftTokenId));
-        // //
-        // vm.expectRevert();
-        // nftMarket.buyNFT(address(nftMarket), _nftTokenId);
+        // 卖家将nft全部授权给nftmarket
+        vm.prank(alice);
+        nft.setApprovalForAll(address(nftMarket), true);
+
+        // 卖家签名上架tokenId为1的nft
+        uint256 deadline = block.timestamp + 10000;
+        bytes32 digest = listSign(1, price, deadline);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(alicePK, digest);
+        // "List(address nftAddress, uint8 tokenId, uint256 price,uint256 nonce,uint256 deadline)"
+        // buyNft(address nftAddress, uint8 tokenId, uint256 price, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
+        // 买家购买
+        uint256 beforeBalance = myToken.balanceOf(lori);
+
+        vm.startPrank(lori);
+        myToken.approve(address(nftMarket), price);
+
+        if (price > lori_fund) vm.expectRevert();
+        nftMarket.buyNft(address(nft), 1, price, deadline, v, r, s);
+
+        uint256 afterBalance = myToken.balanceOf(lori);
+        assertEq(nft.ownerOf(1), lori);
+        assertEq(beforeBalance - price, afterBalance);
+        console2.log("beforeBalance", beforeBalance);
+        console2.log("afterBalance", afterBalance);
     }
 
-    function delist() private {
-        // uint256 _nftTokenId = 1;
-        // vm.startPrank(alice);
-        // nftMarket.delistNft(nftAddress, _nftTokenId);
-        // vm.expectRevert(nftMarket_NotExistNFT.selector);
-        // nftMarket.buyNFT(nftAddress, _nftTokenId);
-    }
-
-    function buy_tokenWithCall(uint256 value) private {
-        // uint256 _tokenId = 1;
-        // uint256 price = nftMarket.getPrice(nftAddress, _tokenId);
-        // vm.startPrank(lori);
-        // if (value > lori_fund) {
-        //     bytes memory InsufficientBalance =
-        //         abi.encodeWithSelector(ERC20InsufficientBalance.selector, lori, lori_fund, value);
-        //     vm.expectRevert(InsufficientBalance);
-        // } else if (value < price) {
-        //     vm.expectRevert();
-        // }
-        // bool success = token.transferWithCall(nftMarketAddress, value, abi.encode(nftAddress, _tokenId));
-        // console2.log(success);
-        // if (value > lori_fund) {
-        //     assertFalse(success, unicode"测试：转钱数量超过Lori持有");
-        // } else if (value < price) {
-        //     // assertFalse(success, unicode"测试：买家金额小于NFT价格");
-        //     // assertEq(myNFT.ownerOf(1), alice);
-        // } else {
-        //     assertTrue(success, unicode"测试：购买成功");
-        //     assertEq(myNFT.ownerOf(1), lori);
-        // }
-    }
-
-    function test_buy_nft() public {
-        list();
-        // buy();
-        buy_tokenWithCall(10);
-    }
+    function buy_tokenWithCall(uint256 value) private {}
 
     /// forge-config: default.fuzz.runs = 100
     function test_fuzz_tokenWithCall(uint256 value) public {
         vm.assume(value > 0);
-        list();
+        // list();
         buy_tokenWithCall(value);
     }
 }
