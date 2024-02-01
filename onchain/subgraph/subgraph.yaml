@@ -53,6 +53,32 @@ dataSources:
         - event: NftCreated(indexed address,indexed address,string,string,uint256,uint256)
           handler: handleNftCreated
       file: ./src/nft-factory.ts
+  - kind: ethereum
+    name: NftMarket
+    network: sepolia
+    source:
+      address: "0xEcCf6479DE8433D2f378F1BD5A43a1f2Bcf304D7"
+      abi: NftMarket
+      startBlock: 5195613
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - DeList
+        - NftMarketEIP712DomainChanged
+        - Listing
+      abis:
+        - name: NftMarket
+          file: ./abis/NftMarket.json
+      eventHandlers:
+        - event: DeList(indexed address,uint256)
+          handler: handleDeList
+        - event: EIP712DomainChanged()
+          handler: handleEIP712DomainChanged
+        - event: Listing(indexed address,uint256,address,uint256)
+          handler: handleListing
+      file: ./src/nft-market.ts
 templates:
   - name: NftCollection
     kind: ethereum/contract

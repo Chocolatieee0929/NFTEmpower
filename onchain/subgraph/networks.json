@@ -7,6 +7,9 @@
     "NftFactory": {
       "address": "0xd7734ac8886aC2C6e241371e801cd0DA095d02b5",
       "startBlock": 5191257
+    },
+    "NftMarket": {
+      "address": "0xEcCf6479DE8433D2f378F1BD5A43a1f2Bcf304D7"
     }
   }
 }

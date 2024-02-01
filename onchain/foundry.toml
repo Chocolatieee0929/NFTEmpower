@@ -2,7 +2,7 @@
 src = 'contracts'
 out = 'out'
 build_info = true
-remappings = ["@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/","@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/","forge-std/=lib/forge-std/src/"]
+remappings = ["forge-std/=lib/forge-std/src/"]
 extra_output = ["storageLayout"]
 libs = ['lib']
 test = 'test'

@@ -16,6 +16,9 @@ export default function AppLayout({ children }) {
           <Heading size="md">NFTEmpower</Heading>
         </Box>
         <Box p="2" ml="16">
+          <Button colorScheme="teal" variant="link" color="blue.300" mr="8" onClick={() => navigate('/')}>
+            NFT Listed
+          </Button>
           <Button
             colorScheme="teal"
             variant="link"

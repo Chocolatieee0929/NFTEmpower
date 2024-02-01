@@ -69,6 +69,12 @@ export default function CollectionTokens() {
   } = useWaitForTransactionReceipt({
     hash: txHash,
   });
+  const { data: isApprovedForAll } = useReadContract({
+    abi: ContractsInterface.NftCollection.abi,
+    address: nftAddress,
+    args: [account.address, ContractsInterface.NftMarket.address],
+    functionName: 'isApprovedForAll',
+  });
 
   useEffect(() => {
     if (status === 'error') {
@@ -183,6 +189,7 @@ export default function CollectionTokens() {
                   <TokenCard
                     tokenId={token.tokenId}
                     owner={token.owner}
+                    isApprovedForAll={isApprovedForAll}
                     nftAddress={nftAddress}
                     isSell={false}
                   ></TokenCard>

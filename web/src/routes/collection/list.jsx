@@ -1,30 +1,34 @@
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 import { get } from 'radash';
+import { fetchNftCollections } from '@/api/nft';
+import NftCollection from '@/components/NftCollection';
+import { Box, Button, Flex, Grid, GridItem, Heading, Spacer, useToast } from '@chakra-ui/react';
 
-async function loadList(address) {
-  const { data } = await axios.post(import.meta.env.VITE_THEGRAPH, {
-    query: address
-      ? `{
-      nftCreateds(first: 1000, where: {address: "${address}"}) {
-          nft
-          owner
-        }
-      }`
-      : `{
-        nftCreateds(first: 1000) {
-            nft
-            owner
-          }
-        }`,
-  });
-  return get(data, 'data.nftCreateds', []);
-}
-
-export default function CollectionList(address) {
+export default function CollectionList() {
   const { isPending, error, data } = useQuery({
-    queryKey: ['collection-list'],
-    queryFn: () => loadList(address),
+    queryKey: ['collections'],
+    queryFn: () => fetchNftCollections(),
   });
-  return <div>list</div>;
+  return (
+    <Box p="10">
+      <Heading as="h4" size="md" p="6">
+        NFT Collections Created
+      </Heading>
+      <Grid templateColumns="repeat(4, 2fr)" gap={4}>
+        {data &&
+          data.map &&
+          data.map((item) => {
+            return (
+              <GridItem bg="blue.500" key={item.nftAddress}>
+                <NftCollection
+                  owner={item.owner}
+                  nftAddress={item.nftAddress}
+                  name={item.name}
+                ></NftCollection>
+              </GridItem>
+            );
+          })}
+      </Grid>
+    </Box>
+  );
 }

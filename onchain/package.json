@@ -9,7 +9,7 @@
     "localnet": "anvil --port 8545 --state ./localnet_state --host 0.0.0.0 --block-time 120",
     "deploy:sepolia": "hardhat deploy --network sepolia --verbose --export forapp/sepolia/artifacts.json --tags xxx",
     "graph-test": "graph test",
-    "graph-codegen": "cd ./subgraph && graph codegen",
+    "codegen": "cd ./subgraph && graph codegen",
     "graph-build:sepolia": "cd ./subgraph && graph codegen && graph build --network sepolia",
     "graph-create:local": "graph create --node http://127.0.0.1:8020 NftBazaar/sub",
     "graph-deploy:sepolia": "cd ./subgraph && graph deploy nftempower --network sepolia",

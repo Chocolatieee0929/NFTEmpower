@@ -1,43 +1,35 @@
-import { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import axios from 'axios';
-import { useAccount } from 'wagmi';
+import { useQuery } from '@tanstack/react-query';
+import { fetchListingNfts } from '@/api/nft';
+import TokenCard from '@/components/TokenCard';
+import { Grid, GridItem, Heading } from '@chakra-ui/react';
 
-const { default: ContractsInterface } = await import(`../contracts/${import.meta.env.VITE_NETWORK}.js`);
-
-const TheGraphUrl = 'https://api.studio.thegraph.com/query/64098/nft-bazaar/version/latest';
-
-async function fetchActivity() {
-  const { data } = await axios.post(TheGraphUrl, {
-    query: `{
-        transfers(first: 100) {
-          from
-          to
-          tokenId
-          blockNumber
-          blockTimestamp
-          id
-        }
-      }`,
+export default function CollectionList() {
+  const { isPending, error, data } = useQuery({
+    queryKey: ['collections'],
+    queryFn: () => fetchListingNfts(),
   });
-  return data.data.transfers;
-}
-
-async function fetchListingNfts() {
-  const { data } = await axios.post(TheGraphUrl, {
-    query: `{
-        nftHolders(first: 100, where: {owner: "${ContractsInterface.NftMarket.address}"}) {
-          owner
-          tokenId
-          from
-          id
-          tokenAddress
-        }
-      }`,
-  });
-  return data.data.nftHolders;
-}
-
-export default function Collections() {
-  return <div>sdfdsf</div>;
+  const orderList = (data && data.data) || [];
+  return (
+    <Grid templateColumns="repeat(4, 2fr)" gap={4} p="10">
+      <Heading as="h4" size="md">
+        NFT Collection Listed
+      </Heading>
+      {orderList &&
+        orderList.map((item) => {
+          return (
+            <GridItem bg="blue.500" key={item.tokenId + item.nftAddress}>
+              <TokenCard
+                tokenId={item.tokenId}
+                owner={item.seller}
+                nftAddress={item.nftAddress}
+                isSell={true}
+                price={item.price}
+                deadline={item.deadline}
+                signature={item.sig}
+              ></TokenCard>
+            </GridItem>
+          );
+        })}
+    </Grid>
+  );
 }
