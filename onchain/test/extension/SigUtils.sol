@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 library SigUtils {
     bytes32 private constant PERMIT_TYPEHASH =
-        keccak256("List(address nftAddress, uint8 tokenId, uint256 price,uint256 nonce,uint256 deadline)");
+        keccak256("List(address nftAddress,uint8 tokenId,uint256 price,uint256 nonce,uint256 deadline)");
 
     struct PermitParams {
         address nftAddress;
@@ -12,10 +12,8 @@ library SigUtils {
         uint256 nonce;
         uint256 deadline;
     }
-    // structHash = hash(abi.encode(TYPEHASH, param1,params...))
 
     function getStructHash(PermitParams memory params) internal pure returns (bytes32) {
-        // "List(address nftAddress, uint8 tokenId, uint256 price,uint256 nonce,uint256 deadline)");
         return keccak256(
             abi.encode(PERMIT_TYPEHASH, params.nftAddress, params.tokenId, params.price, params.nonce, params.deadline)
         );
