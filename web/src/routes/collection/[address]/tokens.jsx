@@ -12,7 +12,20 @@ import {
 import { get } from 'radash';
 import { formatEther, parseEther, getContract, parseUnits } from 'viem';
 import { useParams } from 'react-router-dom';
-import { Container, Center, Button, Text, Stack, useToast } from '@chakra-ui/react';
+import {
+  Container,
+  Center,
+  Button,
+  Text,
+  Grid,
+  Box,
+  GridItem,
+  Stack,
+  Heading,
+  useToast,
+  AbsoluteCenter,
+  Divider,
+} from '@chakra-ui/react';
 import { getNft, fetchNftTokens } from '@/api/nft';
 import { useQuery } from '@tanstack/react-query';
 import TokenCard from '@/components/TokenCard';
@@ -142,8 +155,8 @@ export default function CollectionTokens() {
   }
 
   return (
-    <Container p="6">
-      <Center>
+    <Box p="6" width="100%">
+      <Center width="100%">
         <Stack spacing={3}>
           <Text fontSize="md">owner: {nftDetail && nftDetail.owner}</Text>
           <Text fontSize="md">Mint Price: {nftDetail && formatEther(nftDetail.mintPrice)}</Text>
@@ -152,6 +165,32 @@ export default function CollectionTokens() {
           </Button>
         </Stack>
       </Center>
-    </Container>
+      <Box>
+        <Box position="relative" padding="10">
+          <Divider />
+          <AbsoluteCenter bg="white" px="4">
+            <Heading as="h4" size="md">
+              Tokens Minted
+            </Heading>
+          </AbsoluteCenter>
+        </Box>
+
+        <Grid templateColumns="repeat(4, 2fr)" gap={4}>
+          {tokenList &&
+            tokenList.map((token) => {
+              return (
+                <GridItem bg="blue.500" key={token.tokenId}>
+                  <TokenCard
+                    tokenId={token.tokenId}
+                    owner={token.owner}
+                    nftAddress={nftAddress}
+                    isSell={false}
+                  ></TokenCard>
+                </GridItem>
+              );
+            })}
+        </Grid>
+      </Box>
+    </Box>
   );
 }

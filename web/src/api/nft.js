@@ -32,5 +32,5 @@ export async function fetchNftTokens(nftAddress) {
           }
         }`,
     })
-    .then((res) => get(res.data, 'data.nftCreateds', []));
+    .then((res) => get(res.data, 'data.nftTracers', []));
 }

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import Web3ConnectButton from './Web3ConnectButton';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Flex, Spacer, Container, Button, Box, Heading } from '@chakra-ui/react';
+import { Flex, Spacer, Box, Button, Heading } from '@chakra-ui/react';
 
 const queryClient = new QueryClient();
 
@@ -39,9 +39,9 @@ export default function AppLayout({ children }) {
           <Web3ConnectButton />
         </Box>
       </Flex>
-      <Container minHeight={'90vh'} maxW="2xl">
+      <Box minHeight={'90vh'} width="100%">
         {children}
-      </Container>
+      </Box>
     </QueryClientProvider>
   );
 }
