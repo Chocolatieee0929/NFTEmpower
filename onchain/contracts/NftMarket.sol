@@ -37,10 +37,10 @@ contract NftMarket is EIP712, ReentrancyGuard, Nonces {
     event DeList(address indexed nftAddress, uint256 tokenId);
 
     bytes32 private constant PERMIT_TYPEHASH =
-        keccak256("List(address nftAddress, uint8 tokenId, uint256 price,uint256 nonce,uint256 deadline)");
+        keccak256("List(address nftAddress,uint8 tokenId,uint256 price,uint256 nonce,uint256 deadline)");
     address private tokenAddress;
 
-    constructor(address _tokenAddress) EIP712("NftMarket", "1") {
+    constructor(address _tokenAddress) EIP712("NFTEmpower", "1") {
         tokenAddress = _tokenAddress;
     }
 
