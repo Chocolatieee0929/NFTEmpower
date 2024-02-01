@@ -44,6 +44,10 @@ contract NftMarket is EIP712, ReentrancyGuard, Nonces {
         tokenAddress = _tokenAddress;
     }
 
+    function DOMAIN_SEPARATOR() external view virtual returns (bytes32) {
+        return _domainSeparatorV4();
+    }
+
     function buyNft(address nftAddress, uint8 tokenId, uint256 price, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
         public
         nonReentrant
@@ -52,7 +56,7 @@ contract NftMarket is EIP712, ReentrancyGuard, Nonces {
 
         address seller = IERC721(nftAddress).ownerOf(tokenId);
 
-        _permit(seller, nftAddress, tokenId, price, _useNonce(address(this)), deadline, v, r, s);
+        _permit(seller, nftAddress, tokenId, price, _useNonce(seller), deadline, v, r, s);
 
         IERC20(tokenAddress).safeTransferFrom(msg.sender, seller, price);
         IERC721(nftAddress).safeTransferFrom(seller, msg.sender, tokenId);
@@ -118,7 +122,7 @@ contract NftMarket is EIP712, ReentrancyGuard, Nonces {
         address seller = IERC721(nftAddress).ownerOf(tokenId);
 
         if (!IERC721(nftAddress).isApprovedForAll(seller, address(this))) revert NftNotListing();
-        _permit(seller, nftAddress, tokenId, price, _useNonce(address(this)), deadline, v, r, s);
+        _permit(seller, nftAddress, tokenId, price, _useNonce(seller), deadline, v, r, s);
 
         IERC20(tokenAddress).safeTransfer(seller, value);
         IERC721(nftAddress).safeTransferFrom(seller, from, tokenId);
