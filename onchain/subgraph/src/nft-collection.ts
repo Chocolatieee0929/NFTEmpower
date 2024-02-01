@@ -24,7 +24,5 @@ export function handleTransfer(event: TransferEvent): void {
   holder.nft = event.address;
   holder.owner = event.params.to;
   holder.from = event.params.from;
-  holder.isSell = false;
-  holder.price = new BigInt(0);
   holder.save();
 }

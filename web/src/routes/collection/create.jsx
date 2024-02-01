@@ -1,40 +1,46 @@
-// a form component build with mui framework for creating a new collection
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
-import LoadingButton from '@mui/lab/LoadingButton';
-import { encodePacked, parseEther, parseUnits, keccak256 } from 'viem';
-import { useEffect } from 'react';
-
+import { encodePacked, parseEther, parseUnits, keccak256, parseEventLogs } from 'viem';
+import { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAccount, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 const { default: ContractsInterface } = await import(`../../contracts/${import.meta.env.VITE_NETWORK}.js`);
-import { useAccount, useReadContract, useConfig, useWriteContract } from 'wagmi';
-import { waitForTransactionReceipt } from '@wagmi/core';
 
-// console.log('ContractsInterface', ContractsInterface);
+import {
+  FormControl,
+  FormLabel,
+  Input,
+  Container,
+  VStack,
+  Button,
+  HStack,
+  Heading,
+  useToast,
+} from '@chakra-ui/react';
 
 export default function CollectionCreate() {
-  const { data: hash, isPending, writeContractAsync } = useWriteContract();
-  const config = useConfig();
-  console.log(config);
+  const { data: txHash, isPending: isTxPending, writeContractAsync } = useWriteContract();
+  const {
+    status: receiptStatus,
+    data: blockData,
+    isLoading: isWaitReceipt,
+  } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
+  const [formData, setFormData] = useState({});
+  const toast = useToast();
+  const toastIdRef = useRef();
   const { address } = useAccount();
-  async function handleSubmit(event) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    // eslint-disable-next-line no-console
-
-    // console.log(ContractsInterface.NftFactory.abi);
-    const txHash = await writeContractAsync(
+  const navigate = useNavigate();
+  async function handleSubmit() {
+    await writeContractAsync(
       {
         address: ContractsInterface.NftFactory.address,
         abi: ContractsInterface.NftFactory.abi,
         functionName: 'deployNft',
         args: [
-          data.get('collectionName'),
-          data.get('collectionSymbol'),
-          parseUnits(data.get('collectionSupply')),
-          parseEther(data.get('collectionMintPrice')),
+          formData.name,
+          formData.symbol,
+          parseUnits(formData.maxSupply),
+          parseEther(formData.mintPrice),
           // bytes32 salt
           keccak256(
             encodePacked(
@@ -56,95 +62,105 @@ export default function CollectionCreate() {
         },
         onError: (error) => {
           // eslint-disable-next-line no-console
-          console.log('error', error);
+          console.log('writeContract error', error);
+          toast({
+            title: '交易失败',
+            status: 'error',
+            position: 'top',
+            description: error.message,
+          });
         },
-        onSuccess: (success) => {
-          console.log('success', success);
+        onSuccess: () => {
+          // console.log('writeContract success', success);
+          toastIdRef.current = toast({
+            title: '交易成功，等待区块确认',
+            status: 'loading',
+            position: 'top',
+            duration: null,
+            isClosable: true,
+          });
         },
       }
     );
-    console.log(txHash, config);
-    const transactionReceipt = await waitForTransactionReceipt(config, {
-      hash: txHash,
-      chainId: 11155111,
-      onReplaced: (replacement) => console.log(replacement),
-    });
-    console.log('transactionReceipt', transactionReceipt);
+
+    // const transactionReceipt = await waitForTransactionReceipt(config, {
+    //   hash: txHash,
+    //   chainId: 11155111,
+    //   onReplaced: (replacement) => console.log(replacement),
+    // });
   }
 
-  // useEffect(() => {
-  //   console.log(status, nftAddress, isSuccess, isError);
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [isSuccess, isError]);
+  function updateToast(opts) {
+    if (toastIdRef.current) {
+      toast.update(toastIdRef.current, { ...opts, duration: 5000 });
+    } else {
+      toast(opts);
+    }
+  }
+
+  useEffect(() => {
+    if (receiptStatus === 'error') {
+      console.log('err blockData', blockData);
+      updateToast({
+        title: '区块确认失败:',
+        status: 'error',
+        position: 'top',
+      });
+    }
+    if (receiptStatus === 'success') {
+      const logs = parseEventLogs({
+        abi: ContractsInterface.NftFactory.abi,
+        eventName: 'NftCreated',
+        logs: blockData.logs,
+      });
+      updateToast({
+        status: 'success',
+        title: '创建成功',
+        position: 'top',
+      });
+      navigate(`/collection/${logs[0].args.nftAddress}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [receiptStatus]);
+
+  function onChange(name, value) {
+    value = (value || '').trim();
+    setFormData({ ...formData, ...{ [name]: value } });
+  }
 
   return (
-    <Box
-      sx={{
-        marginTop: 8,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}
-    >
-      <Typography component="h3" variant="h5">
-        {isPending}Create Ysour NFT Collection{status}
-      </Typography>
-      <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
-        <Grid container spacing={2} maxWidth={400}>
-          <Grid item xs={12}>
-            <TextField
-              name="collectionName"
-              required
-              fullWidth
-              id="collectionName"
-              label="Collection Name"
-              autoFocus
+    <Container w="md" mt="20">
+      <VStack spacing={4} align="stretch">
+        <FormLabel as="legend" textAlign="center">
+          <Heading as="h4" size="md">
+            Create Your NFT Collection
+          </Heading>
+        </FormLabel>
+        <FormControl isRequired>
+          <Input placeholder="Your NFT Name" onChange={(e) => onChange('name', e.target.value)} />
+        </FormControl>
+        <FormControl isRequired>
+          <HStack>
+            <Input placeholder="Your NFT Symbol" onChange={(e) => onChange('symbol', e.target.value)} />
+          </HStack>
+        </FormControl>
+        <FormControl isRequired>
+          <HStack>
+            <Input
+              placeholder="Set Your NFT Max Supply"
+              onChange={(e) => onChange('maxSupply', e.target.value)}
             />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              required
-              fullWidth
-              id="collectionSymbol"
-              label="Collection Symbol"
-              name="collectionSymbol"
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              required
-              fullWidth
-              id="collectionSupply"
-              label="MaxSupply of NFTs"
-              name="collectionSupply"
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              required
-              fullWidth
-              name="collectionMintPrice"
-              label="NFT Mint Price (ETH)"
-              id="collectionMintPrice"
-            />
-          </Grid>
-          {/* <Grid item xs={12}>
-            <FormControlLabel
-              control={<Checkbox value="allowExtraEmails" color="primary" />}
-              label="I want to receive inspiration, marketing promotions and updates via email."
-            />
-          </Grid> */}
-        </Grid>
-        {!isPending ? (
-          <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-            Start Create
-          </Button>
-        ) : (
-          <LoadingButton loading fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-            Creating
-          </LoadingButton>
-        )}
-      </Box>
-    </Box>
+          </HStack>
+        </FormControl>
+        <FormControl isRequired>
+          <HStack>
+            <Input placeholder="NFT Mint Price" onChange={(e) => onChange('mintPrice', e.target.value)} />
+          </HStack>
+        </FormControl>
+        <Button colorScheme="blue" onClick={handleSubmit} isLoading={isTxPending || isWaitReceipt}>
+          Start Create
+        </Button>
+      </VStack>
+    </Container>
   );
 }

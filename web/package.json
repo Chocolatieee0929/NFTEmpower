@@ -10,16 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
-    "@mui/icons-material": "^5.15.6",
-    "@mui/lab": "5.0.0-alpha.162",
-    "@mui/material": "^5.15.6",
     "@nft-bazaar/onchain": "link:../onchain",
     "@tanstack/react-query": "^5.17.19",
     "@wagmi/core": "^2.6.3",
     "@web3modal/wagmi": "4.0.0-alpha.3",
     "axios": "^1.6.5",
+    "framer-motion": "^11.0.3",
     "localforage": "^1.10.0",
     "match-sorter": "^6.3.3",
     "prop-types": "^15.8.1",

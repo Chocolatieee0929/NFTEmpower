@@ -2,7 +2,7 @@ import { createWeb3Modal } from '@web3modal/wagmi/react';
 import PropTypes from 'prop-types';
 import { WagmiProvider } from 'wagmi';
 import { defaultWagmiConfig } from '@web3modal/wagmi/react/config';
-import { mainnet, sepolia } from 'wagmi/chains';
+import { mainnet } from 'wagmi/chains';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -39,6 +39,17 @@ const localnet = {
   },
   rpcUrls: {
     default: { http: ['http://127.0.0.1:8545'] },
+  },
+};
+
+const sepolia = {
+  id: 11_155_111,
+  name: 'Sepolia',
+  nativeCurrency: { name: 'Sepolia Ether', symbol: 'SEP', decimals: 18 },
+  rpcUrls: {
+    default: {
+      http: ['https://ethereum-sepolia.publicnode.com'],
+    },
   },
 };
 

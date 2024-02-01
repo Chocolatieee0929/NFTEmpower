@@ -10,4 +10,9 @@ export default defineConfig({
       '@': path.join(__dirname, './src'),
     },
   },
+  server: {
+    watch: {
+      usePolling: true,
+    },
+  },
 });

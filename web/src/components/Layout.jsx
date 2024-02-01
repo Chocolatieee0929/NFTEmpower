@@ -1,56 +1,47 @@
 import React from 'react';
-import Container from '@mui/material/Container';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import PropTypes from 'prop-types';
-import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
-import { styled } from '@mui/material/styles';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import AppBar from '@mui/material/AppBar';
-import Stack from '@mui/material/Stack';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Web3ConnectButton from './Web3ConnectButton';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Flex, Spacer, Box, Button, Heading } from '@chakra-ui/react';
 
 const queryClient = new QueryClient();
 
 export default function AppLayout({ children }) {
-  //  use mui@5 to build website layout. header, center is page content area, footer. header contains logo, menu, login btn .center contains page content. footer contains some links.
+  const navigate = useNavigate();
   return (
     <QueryClientProvider client={queryClient}>
-      <Container maxWidth={false} style={{ padding: 0 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-          <AppBar position="static" style={{ padding: '10px 0' }}>
-            <Grid container spacing={3}>
-              <Grid xs={3} style={{ textAlign: 'center' }}>
-                <Typography variant="h6" gutterBottom>
-                  NFT BAZAAR
-                </Typography>
-              </Grid>
-              <Grid xs>
-                <Stack direction="row" spacing={2}>
-                  <Button variant="text" style={{ color: '#fff' }} component={Link} to={'/'}>
-                    Market
-                  </Button>
-                  {/* <Button variant="text" style={{ color: '#fff' }} href="/profile">
-                    Profile
-                  </Button> */}
-                  <Button variant="text" style={{ color: '#fff' }} component={Link} to={'/collection/create'}>
-                    Mint
-                  </Button>
-                </Stack>
-              </Grid>
-              <Grid xs={3}>
-                <Web3ConnectButton></Web3ConnectButton>
-              </Grid>
-            </Grid>
-          </AppBar>
-          <Box component="main" sx={{ flex: '1 0 auto' }}>
-            {children}
-          </Box>
+      <Flex minWidth="max-content" alignItems="center" gap="2" bgColor="blue.700" color="white">
+        <Box p="2" ml="16">
+          <Heading size="md">NFTEmpower</Heading>
         </Box>
-      </Container>
+        <Box p="2" ml="16">
+          <Button
+            colorScheme="teal"
+            variant="link"
+            color="blue.300"
+            mr="8"
+            onClick={() => navigate('/collection/list')}
+          >
+            NFT Collections
+          </Button>
+          <Button
+            colorScheme="teal"
+            variant="link"
+            color="blue.300"
+            onClick={() => navigate('/collection/create')}
+          >
+            Create
+          </Button>
+        </Box>
+        <Spacer />
+        <Box p="2">
+          <Web3ConnectButton />
+        </Box>
+      </Flex>
+      <Box minHeight={'90vh'} width="100%">
+        {children}
+      </Box>
     </QueryClientProvider>
   );
 }

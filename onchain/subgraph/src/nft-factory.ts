@@ -9,6 +9,11 @@ export function handleNftCreated(event: NftCreatedEvent): void {
   entity.nftAddress = event.params.nftAddress;
   entity.owner = event.params.owner;
 
+  entity.name = event.params.name;
+  entity.symbol = event.params.symbol;
+  entity.mintPrice = event.params.mintPrice;
+  entity.maxSupply = event.params.maxSupply;
+
   entity.blockNumber = event.block.number;
   entity.blockTimestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
