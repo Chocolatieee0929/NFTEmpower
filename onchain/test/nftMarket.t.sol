@@ -100,16 +100,13 @@ contract NftMarketTest is Test {
         return SigUtils.getTypeDataHash(nftMarket.DOMAIN_SEPARATOR(), params);
     }
 
-    /// forge-config: default.fuzz.runs = 100
-    function test_fuzz_permit(uint256 price) public {
-        vm.assume(price > 0);
-
+    function permitOnce(uint256 price) public {
         // 卖家将nft全部授权给nftmarket
         vm.prank(alice);
         nft.setApprovalForAll(address(nftMarket), true);
         uint256 deadline = block.timestamp + 10000;
-        bytes32 digest = listSign(1, price, deadline);
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(alicePK, digest);
+        bytes32 digest1 = listSign(1, price, deadline);
+        (uint8 v1, bytes32 r1, bytes32 s1) = vm.sign(alicePK, digest1);
 
         // 买家购买
         uint256 beforeBalance = myToken.balanceOf(lori);
@@ -119,16 +116,55 @@ contract NftMarketTest is Test {
         bool expectRevert = price > lori_fund;
         if (expectRevert) {
             vm.expectRevert();
-            nftMarket.buyNft(address(nft), 1, price, deadline, v, r, s);
+            nftMarket.buyNft(address(nft), 1, price, deadline, v1, r1, s1);
             return;
         }
-        nftMarket.buyNft(address(nft), 1, price, deadline, v, r, s);
+        nftMarket.buyNft(address(nft), 1, price, deadline, v1, r1, s1);
 
         uint256 afterBalance = myToken.balanceOf(lori);
         assertEq(nft.ownerOf(1), lori);
         assertEq(beforeBalance - price, afterBalance);
         console2.log("beforeBalance", beforeBalance);
         console2.log("afterBalance", afterBalance);
+    }
+
+    function errorPermitTwice(uint256 price) public {
+        vm.prank(alice);
+        nft.setApprovalForAll(address(nftMarket), true);
+        uint256 deadline = block.timestamp + 10000;
+        bytes32 digest1 = listSign(1, price, deadline);
+        bytes32 digest2 = listSign(2, price, deadline);
+        (uint8 v1, bytes32 r1, bytes32 s1) = vm.sign(alicePK, digest1);
+        (uint8 v2, bytes32 r2, bytes32 s2) = vm.sign(alicePK, digest2);
+
+        // 买家购买
+        vm.startPrank(lori);
+        myToken.approve(address(nftMarket), price * 2);
+
+        nftMarket.buyNft(address(nft), 1, price, deadline, v1, r1, s1);
+        vm.expectRevert();
+        nftMarket.buyNft(address(nft), 2, price, deadline, v2, r2, s2);
+    }
+
+    function payTokenaddress(address nftAddress, uint8 tokenId, uint256 deadline, uint8 v, bytes32 r, bytes32 s) public {
+        // 调用_permit函数进行权限验证,进行预授权
+        bytes[2] memory data;
+        bytes memory data1 = abi.encodeWithSignature("permit(address,address,uint256,uint256,uint256,uint8,bytes32,bytes32)", 
+            msg.sender, address(this), 100, myToken.nonces(msg.sender), deadline, v, r, s);
+        data[0] = abi.encodeWithSignature("(address,bytes)", address(myToken), data1);
+        data[1] = abi.encodeWithSignature("(address,bytes)", nftAddress,
+            abi.encodeWithSignature("claimNFT(address,address,uint8)", msg.sender, nftAddress, tokenId));
+        nftMarket.multicall(data);
+    }
+
+    function test_errorPermitTwice() public {
+        errorPermitTwice(100);
+    }
+
+    /// forge-config: default.fuzz.runs = 100
+    function test_fuzz_permit(uint256 price) public {
+        vm.assume(price > 0);
+        permitOnce(price);
     }
 
     function buy_tokenWithCall(uint256 value) private {}
