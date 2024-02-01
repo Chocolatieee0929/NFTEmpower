@@ -2,8 +2,10 @@
 src = 'contracts'
 out = 'out'
 build_info = true
+remappings = ["@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/","@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/","forge-std/=lib/forge-std/src/"]
 extra_output = ["storageLayout"]
-libs = ['node_modules', 'lib']
+libs = ['lib']
 test = 'test'
 cache_path  = 'cache_forge'
-solc = "0.8.20"
+solc = "0.8.23"
+fs_permissions = [{ access = "read-write", path = "./"}]
