@@ -1,8 +1,7 @@
 //SPDX-License-Identifier:MIT
 pragma solidity ^0.8.0;
 
-import {BaseTest} from "./BaseTest.t.sol";
-import {console2} from "forge-std/Test.sol";
+import {console2, Test} from "forge-std/Test.sol";
 
 import {NftMarket} from "../contracts/NftMarket.sol";
 import {NBToken} from "../contracts/NBToken.sol";
@@ -23,7 +22,7 @@ contract testCollection is NftCollection {
     }
 }
 
-contract NftMarketTest is BaseTest {
+contract NftMarketTest is Test {
     NBToken public myToken;
 
     NftMarket public nftMarket;
@@ -38,7 +37,7 @@ contract NftMarketTest is BaseTest {
     testCollection collection; // nft模板
     testCollection nft; // nft实例
 
-    function setUp() public override {
+    function setUp() public {
         // 创建nftMarket, 代币token
         deployer = vm.envAddress("LOCAL_DEPLOYER");
         vm.prank(deployer);
@@ -108,20 +107,21 @@ contract NftMarketTest is BaseTest {
         // 卖家将nft全部授权给nftmarket
         vm.prank(alice);
         nft.setApprovalForAll(address(nftMarket), true);
-
-        // 卖家签名上架tokenId为1的nft
         uint256 deadline = block.timestamp + 10000;
         bytes32 digest = listSign(1, price, deadline);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(alicePK, digest);
-        // "List(address nftAddress, uint8 tokenId, uint256 price,uint256 nonce,uint256 deadline)"
-        // buyNft(address nftAddress, uint8 tokenId, uint256 price, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
+
         // 买家购买
         uint256 beforeBalance = myToken.balanceOf(lori);
-
         vm.startPrank(lori);
         myToken.approve(address(nftMarket), price);
 
-        if (price > lori_fund) vm.expectRevert();
+        bool expectRevert = price > lori_fund;
+        if (expectRevert) {
+            vm.expectRevert();
+            nftMarket.buyNft(address(nft), 1, price, deadline, v, r, s);
+            return;
+        }
         nftMarket.buyNft(address(nft), 1, price, deadline, v, r, s);
 
         uint256 afterBalance = myToken.balanceOf(lori);
