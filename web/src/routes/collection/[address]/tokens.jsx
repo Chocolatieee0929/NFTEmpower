@@ -3,15 +3,17 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 // import NftCard from '../components/NftCard';
 import { MerkleTree } from 'merkletreejs';
+import supabase from '@/api/supabase';
 import {
   useAccount,
   useReadContract,
   useWriteContract,
   useSignTypedData,
+  useConfig,
   useWaitForTransactionReceipt,
 } from 'wagmi';
 import { get } from 'radash';
-import { formatEther, parseEther, getContract, parseUnits, keccak256 } from 'viem';
+import { formatEther, parseEther, getContract, parseUnits, keccak256, bytesToHex } from 'viem';
 import { useParams } from 'react-router-dom';
 import {
   Container,
@@ -40,11 +42,15 @@ import {
 import { getNft, fetchNftTokens } from '@/api/nft';
 import { useQuery } from '@tanstack/react-query';
 import TokenCard from '@/components/TokenCard';
+import { waitForTransactionReceipt } from '@wagmi/core';
+import { writeContract as writeContractAsync } from '@wagmi/core';
 const { default: ContractsInterface } = await import(`../../../contracts/${import.meta.env.VITE_NETWORK}.js`);
 
 export default function CollectionTokens() {
   const account = useAccount();
-  const { data: txHash, isPending: isTxPending, writeContractAsync } = useWriteContract();
+  const config = useConfig();
+  const { data: txHash, isPending: isTxPending, writeContract } = useWriteContract();
+  const [isTxPendingFreeMint, setIsTxPendingFreeMint] = useState(false);
   const { nftAddress } = useParams();
   const { error, data: nftDetail } = useQuery({
     queryKey: ['getNft'],
@@ -69,6 +75,7 @@ export default function CollectionTokens() {
     functionName: 'isApprovedForAll',
   });
 
+  const isSelf = account.address.toLowerCase() === nftDetail && nftDetail.owner.toLowerCase();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = useRef();
   const [whitelist, setWhitelist] = useState([]);
@@ -91,7 +98,7 @@ export default function CollectionTokens() {
   }, [status]);
 
   async function Mint() {
-    const data = await writeContractAsync(
+    const data = await writeContract(
       {
         abi: ContractsInterface.NftCollection.abi,
         address: nftAddress,
@@ -114,14 +121,84 @@ export default function CollectionTokens() {
       }
     );
   }
+  async function MintFree() {
+    let { data: mintWhitelistResult, error } = await supabase
+      .from('mintWhitelist')
+      .select('whitelist')
+      .eq('nft', nftAddress);
+    let mintWhitelist = get(mintWhitelistResult, '[0].whitelist', []);
+    if (mintWhitelist.length === 0) return toast({ status: 'error', title: '未开放白名单' });
+    const leaves = mintWhitelist.map((x) => keccak256(x));
+    const tree = new MerkleTree(leaves, keccak256);
+    const leaf = keccak256(account.address);
+    const proof = tree.getProof(leaf);
+    setIsTxPendingFreeMint(true);
+    try {
+      await writeContractAsync(config, {
+        abi: ContractsInterface.NftCollection.abi,
+        address: nftAddress,
+        functionName: 'mintWithWhitelist',
+        args: [account.address, proof],
+      });
+      toast({
+        status: 'success',
+        title: 'mint成功',
+      });
+    } catch (e) {
+      toast({
+        status: 'error',
+        title: '交易失败',
+        description: e.message,
+      });
+    }
+    setIsTxPendingFreeMint(false);
+  }
 
   async function buildMerkleTree() {
     const list = whitelist.filter((i) => i);
     const leaves = list.map((x) => keccak256(x));
     const tree = new MerkleTree(leaves, keccak256, { sort: true });
-    const root = tree.getRoot().toString('hex');
-    console.log(root);
+    const root = bytesToHex(tree.getRoot()); //.toString('hex');
+    // console.log(root);
     //1. save root to contract 2. save the whitelist to db
+
+    const { error, data } = await supabase
+      .from('mintWhitelist')
+      .update({ whitelist: list })
+      .eq('nft', nftAddress)
+      .select();
+    if (!data.length) {
+      await supabase
+        .from('mintWhitelist')
+        .insert([{ nft: nftAddress, creator: nftDetail.owner, whitelist: list }])
+        .select();
+    }
+    if (error)
+      return toast({
+        status: 'error',
+        title: '添加失败',
+        description: error.message,
+      });
+    const tx = await writeContractAsync(config, {
+      abi: ContractsInterface.NftCollection.abi,
+      address: nftAddress,
+      functionName: 'setMerkleRoot',
+      args: [root],
+    });
+    onClose();
+    waitForTransactionReceipt({
+      hash: tx,
+      onSettled(receipt) {
+        console.log(receipt);
+      },
+      onError(e) {
+        toast({
+          status: 'error',
+          title: '交易失败',
+          description: e.message,
+        });
+      },
+    });
   }
   function updateWhitelist(index, value) {
     let newList = [].concat(whitelist);
@@ -134,13 +211,18 @@ export default function CollectionTokens() {
       <Center width="100%">
         <Stack spacing={3}>
           <Text fontSize="md">owner: {nftDetail && nftDetail.owner}</Text>
-          <Text fontSize="md">Mint Price: {nftDetail && formatEther(nftDetail.mintPrice)}</Text>
+          <Text fontSize="md">Mint Price: {nftDetail && formatEther(nftDetail.mintPrice || 0)}</Text>
           <Button colorScheme="green" onClick={Mint} isLoading={isWaitReceipt || isTxPending}>
             Mint
           </Button>
-          <Button colorScheme="green" variant="link" onClick={onOpen}>
-            设置白名单可 mint
+          <Button colorScheme="blue" onClick={MintFree} isLoading={isTxPendingFreeMint}>
+            免费Mint
           </Button>
+          {isSelf ? (
+            <Button colorScheme="green" variant="link" onClick={onOpen}>
+              设置免费mint的白名单
+            </Button>
+          ) : null}
         </Stack>
       </Center>
       <Box>
