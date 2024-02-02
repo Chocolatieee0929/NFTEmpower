@@ -140,18 +140,8 @@ contract NftMarket is Nonces, EIP712, Multicall, ReentrancyGuard {
     IERC721(nftAddress).safeTransferFrom(seller, buyer, tokenId);
   }
 
-  function multicall(bytes[2] calldata data) external returns (bytes[] memory results) {
-    // 判断msg.sender是否为_msgSender()的代理
-    bytes memory context = msg.sender == _msgSender()
-      ? new bytes(0)
-      : msg.data[msg.data.length - _contextSuffixLength():];
-
-    results = new bytes[](data.length);
-    for (uint256 i = 0; i < data.length; i++) {
-      (address target, bytes memory callData) = abi.decode(data[i], (address, bytes));
-      results[i] = Address.functionDelegateCall(target, bytes.concat(data[i], context));
-    }
-    return results;
+  function erc20Permit(uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s) public {
+    IERC20Permit(tokenAddress).permit(msg.sender, address(this), value, deadline, v, r, s);
   }
 
   fallback() external payable {}
