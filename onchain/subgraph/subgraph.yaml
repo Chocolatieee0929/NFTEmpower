@@ -8,9 +8,9 @@ dataSources:
     name: NBToken
     network: sepolia
     source:
-      address: "0xd0f56A31996d721221FF98afc7d17A320B9F5411"
       abi: NBToken
-      startBlock: 5183854
+      address: "0x2BF5B20d73b6613CB4b466067bB70D3e04559a51"
+      startBlock: 5200853
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -38,8 +38,8 @@ dataSources:
     network: sepolia
     source:
       abi: NftFactory
-      address: "0xd7734ac8886aC2C6e241371e801cd0DA095d02b5"
-      startBlock: 5191257
+      address: "0x5D97621565f767d5C9DE0497f93b780a8C32DD43"
+      startBlock: 5202904
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -57,9 +57,8 @@ dataSources:
     name: NftMarket
     network: sepolia
     source:
-      address: "0xEcCf6479DE8433D2f378F1BD5A43a1f2Bcf304D7"
       abi: NftMarket
-      startBlock: 5195613
+      address: "0xEcCf6479DE8433D2f378F1BD5A43a1f2Bcf304D7"
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

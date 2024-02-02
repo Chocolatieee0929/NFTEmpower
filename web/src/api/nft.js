@@ -18,7 +18,7 @@ export function getNft(nftAddress) {
           }
         }`,
     })
-    .then((res) => get(res.data, 'data.nftCreateds', [])[0]);
+    .then((res) => get(res.data, 'data.nftCreateds', [])[0] || {});
 }
 
 export function fetchNftCollections() {

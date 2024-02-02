@@ -39,7 +39,8 @@ import {
   hexToSignature,
   formatUnits,
 } from 'viem';
-import { waitForTransactionReceipt } from '@wagmi/core';
+
+import { waitForTransactionReceipt, getPublicClient } from '@wagmi/core';
 import { addListingNftToDb } from '@/api/nft';
 import supabase from '@/api/supabase';
 const { default: ContractsInterface } = await import(`../contracts/${import.meta.env.VITE_NETWORK}.js`);
@@ -67,7 +68,6 @@ export default function TokenCard({
   const toast = useToast();
   const { writeContract, writeContractAsync } = useWriteContract();
   const isSelf = (address || '').toLowerCase() === owner.toLowerCase();
-  console.log(address, owner);
   function onSellChange(name, val) {
     val = (val || '').trim();
     setSellData({
@@ -244,24 +244,76 @@ export default function TokenCard({
   async function onBuyNft() {
     const { r, s, v } = hexToSignature(signature);
     setIsBuyLoading(true);
-    const approveHash = await writeContractAsync(
+
+    // const approveHash = await writeContractAsync(
+    //   {
+    //     address: ContractsInterface.NBT.address,
+    //     abi: ContractsInterface.NBT.abi,
+    //     functionName: 'approve',
+    //     args: [ContractsInterface.NftMarket.address, parseUnits(price, 18)],
+    //   },
+    //   {
+    //     onError(e) {
+    //       toast({
+    //         title: '购买失败',
+    //         status: 'error',
+    //         position: 'top',
+    //         description: e.message,
+    //       });
+    //     },
+    //   }
+    // );
+
+    // address owner,address spender,uint256 value,uint256 nonce,uint256 deadline
+    let deadline = Math.floor(Date.now() / 1000) + 100_000;
+    const nonce = await getPublicClient(providerConfig).readContract({
+      address: ContractsInterface.NBT.address,
+      abi: ContractsInterface.NBT.abi,
+      functionName: 'nonces',
+      args: [address],
+    });
+    signTypedData(
       {
-        address: ContractsInterface.NBT.address,
-        abi: ContractsInterface.NBT.abi,
-        functionName: 'approve',
-        args: [ContractsInterface.NftMarket.address, parseUnits(price, 18)],
+        types: {
+          EIP712Domain: [
+            { name: 'name', type: 'string' },
+            { name: 'version', type: 'string' },
+            { name: 'chainId', type: 'uint256' },
+            { name: 'verifyingContract', type: 'address' },
+          ],
+          Permit: [
+            { name: 'owner', type: 'address' },
+            { name: 'spender', type: 'address' },
+            { name: 'value', type: 'uint256' },
+            { name: 'nonce', type: 'uint256' },
+            { name: 'deadline', type: 'uint256' },
+          ],
+        },
+        primaryType: 'Permit',
+        message: {
+          owner: address,
+          spender: ContractsInterface.NftMarket.address,
+          value: parseUnits(sellData.price, 18), // how many nbt token
+          nonce,
+          deadline: BigInt(deadline),
+        },
+        domain: {
+          version: ContractsInterface.version,
+          chainId: ContractsInterface.chainId,
+          verifyingContract: ContractsInterface.NBT.address,
+          name: 'NftBazaarToken',
+        },
       },
       {
-        onError(e) {
-          toast({
-            title: '购买失败',
-            status: 'error',
-            position: 'top',
-            description: e.message,
-          });
+        onSuccess: (signature) => {
+          console.log(signature);
+        },
+        onError: (e) => {
+          console.log(e);
         },
       }
     );
+    return;
 
     await waitForTransactionReceipt(providerConfig, {
       hash: approveHash,

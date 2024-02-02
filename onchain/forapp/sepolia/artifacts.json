@@ -642,7 +642,7 @@
       ]
     },
     "NftCollection": {
-      "address": "0xf95d6eb26B6CFA843B43d890acCbbA61330bd780",
+      "address": "0x6eaBf2edECC8acD5CC9b0B6B4578F777618ebe1f",
       "abi": [
         {
           "inputs": [],
@@ -1451,6 +1451,24 @@
           "type": "function"
         },
         {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "_to",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes32[]",
+              "name": "merkleProof",
+              "type": "bytes32[]"
+            }
+          ],
+          "name": "mintWithWhitelist",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
           "inputs": [],
           "name": "mintedCount",
           "outputs": [
@@ -1626,6 +1644,19 @@
         {
           "inputs": [
             {
+              "internalType": "bytes32",
+              "name": "_merkleRoot",
+              "type": "bytes32"
+            }
+          ],
+          "name": "setMerkleRoot",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
               "internalType": "bytes4",
               "name": "interfaceId",
               "type": "bytes4"
@@ -1727,7 +1758,7 @@
       ]
     },
     "NftFactory": {
-      "address": "0xd7734ac8886aC2C6e241371e801cd0DA095d02b5",
+      "address": "0x5D97621565f767d5C9DE0497f93b780a8C32DD43",
       "abi": [
         {
           "inputs": [
