@@ -22,6 +22,7 @@
     "framer-motion": "^11.0.3",
     "localforage": "^1.10.0",
     "match-sorter": "^6.3.3",
+    "merkletreejs": "^0.3.11",
     "prop-types": "^15.8.1",
     "radash": "^11.0.0",
     "react": "^18.2.0",

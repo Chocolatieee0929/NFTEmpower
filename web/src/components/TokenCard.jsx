@@ -66,7 +66,8 @@ export default function TokenCard({
   const { address } = useAccount();
   const toast = useToast();
   const { writeContract, writeContractAsync } = useWriteContract();
-
+  const isSelf = (address || '').toLowerCase() === owner.toLowerCase();
+  console.log(address, owner);
   function onSellChange(name, val) {
     val = (val || '').trim();
     setSellData({
@@ -304,7 +305,10 @@ export default function TokenCard({
           <Image src="" alt="" borderRadius="lg" />
           <Stack mt="6" spacing="3">
             <Heading size="md">nftToken:{tokenId}</Heading>
-            <Text>owner: {owner}</Text>
+            <Text>
+              owner: {owner}
+              {isSelf ? ' ( IS YOU ) ' : ''}
+            </Text>
             <Text>nft: {nftAddress}</Text>
             {price && (
               <Text color="blue.600" fontSize="2xl">
@@ -316,12 +320,12 @@ export default function TokenCard({
         <Divider />
         <CardFooter>
           <ButtonGroup spacing="2">
-            {isSell && (
+            {isSell && !isSelf && (
               <Button variant="solid" colorScheme="blue" onClick={onBuyNft} isLoading={isBuyLoading}>
                 Buy now
               </Button>
             )}
-            {!isSell && (
+            {!isSell && isSelf && (
               <Button
                 variant="ghost"
                 colorScheme="blue"

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 // import NftCard from '../components/NftCard';
@@ -20,38 +20,30 @@ import {
   Grid,
   Box,
   GridItem,
+  Input,
   Stack,
   Heading,
   useToast,
   AbsoluteCenter,
   Divider,
+  Drawer,
+  VStack,
+  useDisclosure,
+  DrawerBody,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
 } from '@chakra-ui/react';
 import { getNft, fetchNftTokens } from '@/api/nft';
 import { useQuery } from '@tanstack/react-query';
 import TokenCard from '@/components/TokenCard';
 const { default: ContractsInterface } = await import(`../../../contracts/${import.meta.env.VITE_NETWORK}.js`);
 
-// async function fetchMyNfts(address) {
-//   const { data } = await axios.post(TheGraphUrl, {
-//     query: `{
-//         nftHolders(first: 100, where: {owner: "${address}"}) {
-//           owner
-//           tokenId
-//           id
-//           tokenAddress
-//         }
-//       }`,
-//   });
-//   return get(data, 'data.nftHolders', []);
-// }
-
 export default function CollectionTokens() {
-  const [tabName, setTabName] = useState('MyNft');
-  const [transfers, setTransfers] = useState([]);
-  const [myNftList, setMyNftList] = useState([]);
   const account = useAccount();
   const { data: txHash, isPending: isTxPending, writeContractAsync } = useWriteContract();
-  const { signTypedData } = useSignTypedData();
   const { nftAddress } = useParams();
   const { error, data: nftDetail } = useQuery({
     queryKey: ['getNft'],
@@ -76,6 +68,9 @@ export default function CollectionTokens() {
     functionName: 'isApprovedForAll',
   });
 
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  const btnRef = useRef()
+
   useEffect(() => {
     if (status === 'error') {
       toast({
@@ -95,41 +90,6 @@ export default function CollectionTokens() {
   }, [status]);
 
   async function Mint() {
-    // signTypedData(
-    //   {
-    //     types: {
-    //       Permit: [
-    //         { name: 'seller', type: 'address' },
-    //         { name: 'tokenId', type: 'uint8' },
-    //         { name: 'price', type: 'uint256' },
-    //         { name: 'deadline', type: 'uint256' },
-    //         { name: 'nonce', type: 'uint' },
-    //       ],
-    //     },
-    //     primaryType: 'Permit',
-    //     message: {
-    //       seller: address,
-    //       tokenId: BigInt('1'),
-    //       price: parseUnits('1', 18),
-    //       deadline: BigInt(Math.floor(Date.now() / 1000) + 100_000),
-    //       nonce: 1,
-    //     },
-    //     domain: {
-    //       version: ContractsInterface.version,
-    //       chainId: ContractsInterface.chainId,
-    //       verifyingContract: ContractsInterface.NftMarket.address,
-    //       name: 'NftBazaar.com',
-    //     },
-    //   },
-    //   {
-    //     onSuccess: (signature) => {
-    //       console.log(signature);
-    //     },
-    //     onError: (e) => {
-    //       console.log(e);
-    //     },
-    //   }
-    // );
     const data = await writeContractAsync(
       {
         abi: ContractsInterface.NftCollection.abi,
@@ -144,7 +104,6 @@ export default function CollectionTokens() {
           console.log(receipt);
         },
         onError(e) {
-          // console.log(e);
           toast({
             status: 'error',
             title: '交易失败',
@@ -153,11 +112,6 @@ export default function CollectionTokens() {
         },
       }
     );
-    console.log(data);
-  }
-
-  async function handleTabChange(e, value) {
-    setTabName(value);
   }
 
   return (
@@ -168,6 +122,9 @@ export default function CollectionTokens() {
           <Text fontSize="md">Mint Price: {nftDetail && formatEther(nftDetail.mintPrice)}</Text>
           <Button colorScheme="green" onClick={Mint} isLoading={isWaitReceipt || isTxPending}>
             Mint
+          </Button>
+          <Button colorScheme="green" variant="link" onClick={onOpen}>
+            设置白名单可 mint
           </Button>
         </Stack>
       </Center>
@@ -198,6 +155,36 @@ export default function CollectionTokens() {
             })}
         </Grid>
       </Box>
+      <Drawer
+        isOpen={isOpen}
+        placement='right'
+        onClose={onClose}
+        finalFocusRef={btnRef}
+      >
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerCloseButton />
+          <DrawerHeader>白名单地址</DrawerHeader>
+
+          <DrawerBody>
+            <VStack>
+            <Input placeholder='address here 0x...' />
+            <Input placeholder='address here 0x...' />
+            <Input placeholder='address here 0x...' />
+            <Input placeholder='address here 0x...' />
+            <Input placeholder='address here 0x...' />
+            <Input placeholder='address here 0x...' />
+            </VStack>
+          </DrawerBody>
+
+          <DrawerFooter>
+            <Button variant='outline' mr={3} onClick={onClose}>
+              Cancel
+            </Button>
+            <Button colorScheme='blue'>Save</Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </Box>
   );
 }
