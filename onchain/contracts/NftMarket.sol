@@ -13,6 +13,8 @@ import {EIP712} from '@openzeppelin/contracts/utils/cryptography/EIP712.sol';
 import {ECDSA} from '@openzeppelin/contracts/utils/cryptography/ECDSA.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 
+import {MerkleProof} from '@openzeppelin/contracts/utils/cryptography/MerkleProof.sol';
+
 /**
  * @title NftMarket contract
  * @dev This contract is used for listing and buying NFTs
@@ -36,6 +38,7 @@ contract NftMarket is Nonces, EIP712, Multicall, ReentrancyGuard {
   bytes32 private constant PERMIT_TYPEHASH =
     keccak256('List(address nftAddress,uint8 tokenId,uint256 price,uint256 nonce,uint256 deadline)');
   address private tokenAddress;
+  mapping(bytes32 nftFeature => uint256) private _nonces;
 
   constructor(address _tokenAddress) EIP712('NFTEmpower', '1') {
     tokenAddress = _tokenAddress;
@@ -43,6 +46,20 @@ contract NftMarket is Nonces, EIP712, Multicall, ReentrancyGuard {
 
   function DOMAIN_SEPARATOR() external view virtual returns (bytes32) {
     return _domainSeparatorV4();
+  }
+
+  function nonces(address owner, address nftAddress, uint8 tokenId) public view returns (uint256) {
+    bytes32 nftFeature = keccak256(abi.encode(owner, nftAddress, tokenId));
+    return _nonces[nftFeature];
+  }
+
+  function _useNonce(address owner, address nftAddress, uint8 tokenId) internal returns (uint256) {
+    bytes32 nftFeature = keccak256(abi.encode(owner, nftAddress, tokenId));
+
+    unchecked {
+      // It is important to do x++ and not ++x here.
+      return _nonces[nftFeature]++;
+    }
   }
 
   function buyNft(
@@ -58,7 +75,7 @@ contract NftMarket is Nonces, EIP712, Multicall, ReentrancyGuard {
 
     address seller = IERC721(nftAddress).ownerOf(tokenId);
 
-    _permit(seller, nftAddress, tokenId, price, _useNonce(seller), deadline, v, r, s);
+    _permit(seller, nftAddress, tokenId, price, _useNonce(seller, nftAddress, tokenId), deadline, v, r, s);
 
     IERC20(tokenAddress).transferFrom(msg.sender, seller, price);
     IERC721(nftAddress).transferFrom(seller, msg.sender, tokenId);
@@ -88,20 +105,6 @@ contract NftMarket is Nonces, EIP712, Multicall, ReentrancyGuard {
     if (signer != seller) {
       revert ERC2612InvalidSigner(signer, seller);
     }
-  }
-
-  function recoverSig(
-    address seller,
-    uint8 tokenId,
-    uint256 price,
-    uint16 deadline,
-    uint8 v,
-    bytes32 r,
-    bytes32 s
-  ) external pure returns (address) {
-    bytes32 hash = keccak256(abi.encodePacked(seller, tokenId, price, deadline));
-    address signer = ecrecover(hash, v, r, s);
-    return signer;
   }
 
   function isValidErc20(address erc20) public view returns (bool) {
