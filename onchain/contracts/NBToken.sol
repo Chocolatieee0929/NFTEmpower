@@ -17,6 +17,6 @@ contract NBToken is ERC20, ERC20Burnable, ERC20Permit, Ownable {
   }
 
   function decimals() public view virtual override returns (uint8) {
-    return 3;
+    return 18;
   }
 }

@@ -3,7 +3,7 @@
   "chainId": "11155111",
   "contracts": {
     "NBT": {
-      "address": "0xd0f56A31996d721221FF98afc7d17A320B9F5411",
+      "address": "0x2BF5B20d73b6613CB4b466067bB70D3e04559a51",
       "abi": [
         {
           "inputs": [
@@ -1830,7 +1830,7 @@
       ]
     },
     "NftMarket": {
-      "address": "0xEcCf6479DE8433D2f378F1BD5A43a1f2Bcf304D7",
+      "address": "0x3b04C5d86bBB1cf3Cd2007022ebac5cc8e59b830",
       "abi": [
         {
           "inputs": [
@@ -1844,25 +1844,8 @@
           "type": "constructor"
         },
         {
-          "inputs": [
-            {
-              "internalType": "address",
-              "name": "target",
-              "type": "address"
-            }
-          ],
-          "name": "AddressEmptyCode",
-          "type": "error"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "address",
-              "name": "account",
-              "type": "address"
-            }
-          ],
-          "name": "AddressInsufficientBalance",
+          "inputs": [],
+          "name": "BUYGOOD",
           "type": "error"
         },
         {
@@ -1920,11 +1903,6 @@
           "type": "error"
         },
         {
-          "inputs": [],
-          "name": "FailedInnerCall",
-          "type": "error"
-        },
-        {
           "inputs": [
             {
               "internalType": "address",
@@ -1958,17 +1936,6 @@
         {
           "inputs": [],
           "name": "ReentrancyGuardReentrantCall",
-          "type": "error"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "address",
-              "name": "token",
-              "type": "address"
-            }
-          ],
-          "name": "SafeERC20FailedOperation",
           "type": "error"
         },
         {
@@ -2051,6 +2018,19 @@
         {
           "stateMutability": "payable",
           "type": "fallback"
+        },
+        {
+          "inputs": [],
+          "name": "DOMAIN_SEPARATOR",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
         },
         {
           "inputs": [

@@ -1,8 +1,8 @@
 {
   "sepolia": {
     "NBToken": {
-      "address": "0xd0f56A31996d721221FF98afc7d17A320B9F5411",
-      "startBlock": 5183854
+      "address": "0x2BF5B20d73b6613CB4b466067bB70D3e04559a51",
+      "startBlock": 5200853
     },
     "NftFactory": {
       "address": "0xd7734ac8886aC2C6e241371e801cd0DA095d02b5",

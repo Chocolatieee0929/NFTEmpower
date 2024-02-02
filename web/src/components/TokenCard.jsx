@@ -29,9 +29,19 @@ import {
 import propTypes from 'prop-types';
 import { useState } from 'react';
 import { useSignTypedData, useAccount, useWriteContract, useReadContract, useConfig } from 'wagmi';
-import { parseUnits, keccak256, encodePacked, hexToSignature } from 'viem';
+import {
+  parseUnits,
+  slice,
+  keccak256,
+  toBytes,
+  hexToNumber,
+  encodePacked,
+  hexToSignature,
+  formatUnits,
+} from 'viem';
 import { waitForTransactionReceipt } from '@wagmi/core';
 import { addListingNftToDb } from '@/api/nft';
+import supabase from '@/api/supabase';
 const { default: ContractsInterface } = await import(`../contracts/${import.meta.env.VITE_NETWORK}.js`);
 
 export default function TokenCard({
@@ -50,6 +60,7 @@ export default function TokenCard({
     whiteAddress: '',
   });
   const [isApprovedLoading, setIsApprovedLoading] = useState(false);
+  const [isBuyLoading, setIsBuyLoading] = useState(false);
   const { signTypedData } = useSignTypedData();
   const providerConfig = useConfig();
   const { address } = useAccount();
@@ -115,6 +126,23 @@ export default function TokenCard({
   }
 
   // 上架
+  const { data: nonce } = useReadContract(
+    {
+      address: ContractsInterface.NftMarket.address,
+      abi: ContractsInterface.NftMarket.abi,
+      functionName: 'nonces',
+      args: [address],
+    },
+    {
+      onSuccess: (nonce) => {
+        console.log(nonce);
+      },
+      onError: (e) => {
+        console.log(e);
+      },
+    }
+  );
+
   async function onList() {
     if (!sellData.price) {
       return toast({
@@ -127,7 +155,13 @@ export default function TokenCard({
     signTypedData(
       {
         types: {
-          Permit: [
+          EIP712Domain: [
+            { name: 'name', type: 'string' },
+            { name: 'version', type: 'string' },
+            { name: 'chainId', type: 'uint256' },
+            { name: 'verifyingContract', type: 'address' },
+          ],
+          List: [
             { name: 'nftAddress', type: 'address' },
             { name: 'tokenId', type: 'uint8' },
             { name: 'price', type: 'uint256' },
@@ -135,20 +169,19 @@ export default function TokenCard({
             { name: 'deadline', type: 'uint256' },
           ],
         },
-        primaryType: 'Permit',
+        primaryType: 'List',
         message: {
           nftAddress: nftAddress,
-          tokenId: +tokenId,
-          seller: address,
+          tokenId: BigInt(tokenId),
           price: parseUnits(sellData.price, 18), // how many nbt token
-          nonce: Math.round(Math.random() * 1000000),
-          deadline,
+          nonce,
+          deadline: BigInt(deadline),
         },
         domain: {
           version: ContractsInterface.version,
           chainId: ContractsInterface.chainId,
           verifyingContract: ContractsInterface.NftMarket.address,
-          name: 'NftMarket',
+          name: 'NFTEmpower',
         },
       },
       {
@@ -209,30 +242,59 @@ export default function TokenCard({
   // 点击购买 nft
   async function onBuyNft() {
     const { r, s, v } = hexToSignature(signature);
-    console.log([nftAddress, +tokenId, parseUnits(price, 18), deadline, v, r, s]);
-    writeContract({
-      address: ContractsInterface.NftMarket.address,
-      abi: ContractsInterface.NftMarket.abi,
-      functionName: 'buyNft',
-      args: [nftAddress, +tokenId, parseUnits(price, 18), deadline, v, r, s],
-      onReceipt: (receipt) => {
-        console.log(receipt);
-        toast({
-          title: '购买成功',
-          status: 'success',
-          position: 'top',
-        });
+    setIsBuyLoading(true);
+    const approveHash = await writeContractAsync(
+      {
+        address: ContractsInterface.NBT.address,
+        abi: ContractsInterface.NBT.abi,
+        functionName: 'approve',
+        args: [ContractsInterface.NftMarket.address, parseUnits(price, 18)],
       },
-      onError: (e) => {
-        console.log(e);
-        toast({
-          title: '购买失败',
-          status: 'error',
-          position: 'top',
-          description: e.message,
-        });
-      },
+      {
+        onError(e) {
+          toast({
+            title: '购买失败',
+            status: 'error',
+            position: 'top',
+            description: e.message,
+          });
+        },
+      }
+    );
+
+    await waitForTransactionReceipt(providerConfig, {
+      hash: approveHash,
     });
+    const buyNftHash = await writeContractAsync(
+      {
+        address: ContractsInterface.NftMarket.address,
+        abi: ContractsInterface.NftMarket.abi,
+        functionName: 'buyNft',
+        args: [nftAddress, BigInt(tokenId), parseUnits(price, 18), BigInt(deadline), v, r, s],
+      },
+      {
+        onError: (e) => {
+          console.log(e);
+          toast({
+            title: '购买失败',
+            status: 'error',
+            position: 'top',
+            description: e.message,
+          });
+        },
+      }
+    );
+    await waitForTransactionReceipt(providerConfig, {
+      hash: buyNftHash,
+    });
+    toast({
+      title: '购买成功',
+      status: ' success',
+      position: 'top',
+    });
+    // delete from db
+    setIsBuyLoading(false);
+    await supabase.from('ListingOrder').delete().eq('sig', signature);
   }
 
   return (
@@ -255,7 +317,7 @@ export default function TokenCard({
         <CardFooter>
           <ButtonGroup spacing="2">
             {isSell && (
-              <Button variant="solid" colorScheme="blue" onClick={onBuyNft}>
+              <Button variant="solid" colorScheme="blue" onClick={onBuyNft} isLoading={isBuyLoading}>
                 Buy now
               </Button>
             )}
