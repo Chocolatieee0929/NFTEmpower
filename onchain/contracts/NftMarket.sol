@@ -2,18 +2,16 @@
 pragma solidity ^0.8.20;
 
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {IERC20Permit} from '@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol';
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+
 import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC721Receiver} from '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
-
-import '@openzeppelin/contracts/utils/Nonces.sol';
-import '@openzeppelin/contracts/utils/cryptography/EIP712.sol';
+import {Multicall} from '@openzeppelin/contracts/utils/Multicall.sol';
+import {Nonces} from '@openzeppelin/contracts/utils/Nonces.sol';
+import {EIP712} from '@openzeppelin/contracts/utils/cryptography/EIP712.sol';
 import {ECDSA} from '@openzeppelin/contracts/utils/cryptography/ECDSA.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
-
-import '@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol';
-import '@openzeppelin/contracts-upgradeable/utils/NoncesUpgradeable.sol';
-import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 
 /**
  * @title NftMarket contract
@@ -23,7 +21,7 @@ import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
  * 1. 存储NFT的拥有者挂单信息（listingNft）
  * 2. 获得授权，作为中间人，转移 卖家nft 和 买家的erc20 token
  */
-contract NftMarket is EIP712, ReentrancyGuard, Nonces {
+contract NftMarket is Nonces, EIP712, Multicall, ReentrancyGuard {
   using SafeERC20 for IERC20;
 
   error NftNotListing();
@@ -125,7 +123,6 @@ contract NftMarket is EIP712, ReentrancyGuard, Nonces {
   function tokenReceive(address from, address to, uint256 value, bytes calldata data) external nonReentrant {
     (address nftAddress, uint8 tokenId, uint256 price, uint256 deadline, uint8 v, bytes32 r, bytes32 s) = abi
       .decode(data, (address, uint8, uint256, uint256, uint8, bytes32, bytes32));
-
     require(value >= price, 'NFTMarket error: Insufficient money.');
     address seller = IERC721(nftAddress).ownerOf(tokenId);
 
@@ -134,6 +131,27 @@ contract NftMarket is EIP712, ReentrancyGuard, Nonces {
 
     IERC20(tokenAddress).transferFrom(seller, from, value);
     IERC721(nftAddress).transferFrom(seller, from, tokenId);
+  }
+
+  function claimNFT(address buyer, address nftAddress, uint8 tokenId) internal {
+    uint256 price = 100;
+    address seller = IERC721(nftAddress).ownerOf(tokenId);
+    IERC20(tokenAddress).safeTransferFrom(buyer, seller, price);
+    IERC721(nftAddress).safeTransferFrom(seller, buyer, tokenId);
+  }
+
+  function multicall(bytes[2] calldata data) external returns (bytes[] memory results) {
+    // 判断msg.sender是否为_msgSender()的代理
+    bytes memory context = msg.sender == _msgSender()
+      ? new bytes(0)
+      : msg.data[msg.data.length - _contextSuffixLength():];
+
+    results = new bytes[](data.length);
+    for (uint256 i = 0; i < data.length; i++) {
+      (address target, bytes memory callData) = abi.decode(data[i], (address, bytes));
+      results[i] = Address.functionDelegateCall(target, bytes.concat(data[i], context));
+    }
+    return results;
   }
 
   fallback() external payable {}
