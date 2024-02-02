@@ -7,7 +7,7 @@ import './BaseScript.s.sol';
 import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 
 contract MarketV1 is BaseScript {
-    address proxy;
+    address public proxy;
     function run() public broadcaster {}
 
     function deployFirst() public broadcaster {
