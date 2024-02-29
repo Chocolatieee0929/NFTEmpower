@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
@@ -6,25 +6,17 @@ import {IERC20Permit} from '@openzeppelin/contracts/token/ERC20/extensions/IERC2
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import {IERC721Receiver} from '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import {Multicall} from '@openzeppelin/contracts/utils/Multicall.sol';
 import {Nonces} from '@openzeppelin/contracts/utils/Nonces.sol';
 import {EIP712} from '@openzeppelin/contracts/utils/cryptography/EIP712.sol';
 import {ECDSA} from '@openzeppelin/contracts/utils/cryptography/ECDSA.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import {AccessManaged} from '@openzeppelin/contracts/access/manager/AccessManaged.sol';
 
 import {MerkleProof} from '@openzeppelin/contracts/utils/cryptography/MerkleProof.sol';
 
-/**
- * @title NftMarket contract
- * @dev This contract is used for listing and buying NFTs
- *
- * 合约功能：
- * 1. 存储NFT的拥有者挂单信息（listingNft）
- * 2. 获得授权，作为中间人，转移 卖家nft 和 买家的erc20 token
- */
-contract NftMarket is Nonces, EIP712, Multicall, ReentrancyGuard {
-  using SafeERC20 for IERC20;
+contract NftMarket is Nonces, EIP712, Multicall, ReentrancyGuard, AccessManaged {
+  using SafeERC20 for *;
 
   error NftNotListing();
   error NftHasListed();
@@ -35,13 +27,16 @@ contract NftMarket is Nonces, EIP712, Multicall, ReentrancyGuard {
   event Listing(address indexed nftAddress, uint256 tokenId, address seller, uint256 price);
   event DeList(address indexed nftAddress, uint256 tokenId);
 
+  uint256 immutable FEEBASE = 10 ** 3;
+  uint256 immutable FEERATE = 200;
+
   bytes32 private constant PERMIT_TYPEHASH =
     keccak256('List(address nftAddress,uint8 tokenId,uint256 price,uint256 nonce,uint256 deadline)');
-  address private tokenAddress;
-  mapping(bytes32 nftFeature => uint256) private _nonces;
+  address private NBT;
+  mapping(bytes32 nftFeature => uint256) private  _nftFeatureNonces;
 
-  constructor(address _tokenAddress) EIP712('NFTEmpower', '1') {
-    tokenAddress = _tokenAddress;
+  constructor(address _NBT, address initialAuthority) EIP712('NFTEmpower', '1') AccessManaged(initialAuthority){
+    NBT = _NBT;
   }
 
   function DOMAIN_SEPARATOR() external view virtual returns (bytes32) {
@@ -50,7 +45,7 @@ contract NftMarket is Nonces, EIP712, Multicall, ReentrancyGuard {
 
   function nonces(address owner, address nftAddress, uint8 tokenId) public view returns (uint256) {
     bytes32 nftFeature = keccak256(abi.encode(owner, nftAddress, tokenId));
-    return _nonces[nftFeature];
+    return _nftFeatureNonces[nftFeature];
   }
 
   function _useNonce(address owner, address nftAddress, uint8 tokenId) internal returns (uint256) {
@@ -58,11 +53,23 @@ contract NftMarket is Nonces, EIP712, Multicall, ReentrancyGuard {
 
     unchecked {
       // It is important to do x++ and not ++x here.
-      return _nonces[nftFeature]++;
+      return _nftFeatureNonces[nftFeature]++;
     }
   }
 
-  function buyNft(
+  function buyNft(address nftAddress, uint8 tokenId,uint256 price, uint256 deadline, uint8 v,bytes32 r,bytes32 s) public nonReentrant {
+    if (nftAddress == address(0)) revert NftNotListing();
+    _buyNft(_msgSender(), _msgSender(), nftAddress, tokenId, price, deadline, v, r, s);
+  }
+
+  function buyNft(address to, address nftAddress, uint8 tokenId,uint256 price, uint256 deadline, uint8 v,bytes32 r,bytes32 s) public nonReentrant {
+    if (nftAddress == address(0)) revert NftNotListing();
+    _buyNft(_msgSender(), to, nftAddress, tokenId, price, deadline, v, r, s);
+  }
+
+  function _buyNft(
+    address buyer,
+    address to,
     address nftAddress,
     uint8 tokenId,
     uint256 price,
@@ -70,15 +77,16 @@ contract NftMarket is Nonces, EIP712, Multicall, ReentrancyGuard {
     uint8 v,
     bytes32 r,
     bytes32 s
-  ) public nonReentrant {
-    if (nftAddress == address(0)) revert NftNotListing();
-
+  ) internal {
     address seller = IERC721(nftAddress).ownerOf(tokenId);
+
+    uint256 fee = price * FEERATE / FEEBASE;
 
     _permit(seller, nftAddress, tokenId, price, _useNonce(seller, nftAddress, tokenId), deadline, v, r, s);
 
-    IERC20(tokenAddress).transferFrom(msg.sender, seller, price);
-    IERC721(nftAddress).transferFrom(seller, msg.sender, tokenId);
+    IERC20(NBT).transferFrom(buyer, seller, price);
+    IERC20(NBT).transferFrom(buyer, NBT, fee); // 手续费
+    IERC721(nftAddress).transferFrom(seller, to, tokenId);
   }
 
   function _permit(
@@ -132,19 +140,19 @@ contract NftMarket is Nonces, EIP712, Multicall, ReentrancyGuard {
     if (!IERC721(nftAddress).isApprovedForAll(seller, address(this))) revert NftNotListing();
     _permit(seller, nftAddress, tokenId, price, _useNonce(seller), deadline, v, r, s);
 
-    IERC20(tokenAddress).transferFrom(seller, from, value);
+    IERC20(NBT).transferFrom(seller, from, value);
     IERC721(nftAddress).transferFrom(seller, from, tokenId);
   }
 
   function claimNFT(address buyer, address nftAddress, uint8 tokenId) internal {
     uint256 price = 100;
     address seller = IERC721(nftAddress).ownerOf(tokenId);
-    IERC20(tokenAddress).safeTransferFrom(buyer, seller, price);
+    IERC20(NBT).safeTransferFrom(buyer, seller, price);
     IERC721(nftAddress).safeTransferFrom(seller, buyer, tokenId);
   }
 
   function erc20Permit(uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s) public {
-    IERC20Permit(tokenAddress).permit(msg.sender, address(this), value, deadline, v, r, s);
+    IERC20Permit(NBT).permit(msg.sender, address(this), value, deadline, v, r, s);
   }
 
   fallback() external payable {}
