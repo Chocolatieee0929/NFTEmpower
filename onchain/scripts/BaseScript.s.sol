@@ -4,15 +4,8 @@ pragma solidity ^0.8.0;
 import {Script, console} from 'forge-std/Script.sol';
 
 abstract contract BaseScript is Script {
-  address internal deployer;
+  address internal deployer = vm.envAddress("LOCAL_DEPLOYER");
   string internal mnemonic;
-
-    function setUp() public virtual {
-        // string memory rpc = vm.envString("SEPOLIA_RPC_URL");
-        // uint256 sepolia = vm.createFork(rpc);
-        // vm.selectFork(sepolia);
-        deployer = vm.envAddress("LOCAL_DEPLOYER");
-    }
 
   function saveContract(string memory network, string memory name, address addr) public {
     string memory json1 = 'key';

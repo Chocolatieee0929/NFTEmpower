@@ -10,7 +10,7 @@ import {NftFactory} from '../contracts/NftFactory.sol';
 import {NftCollection} from '../contracts/NftCollection.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IOutswapV1Router} from 'contracts/interface/IOutswapV1.sol';
-import {NftFlash} from 'contracts/MarketFlash.sol';
+import {NftFlash} from 'contracts/defi/MarketFlash.sol';
 
 import {SigUtils} from './extension/SigUtils.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
@@ -37,7 +37,7 @@ contract NftMarketTest is Test {
   Router address:  0x84eA74d481Ee0A5332c457a4d796187F6Ba67fEB
   WETH address:  0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E
    */
-  NBToken public myToken = NBToken(0x5FbDB2315678afecb367f032d93F642f64180aa3);
+  NBToken public myToken = new NBToken();
   address public route = 0x84eA74d481Ee0A5332c457a4d796187F6Ba67fEB;
   address token = 0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1; // 用来贷款买nft
   NftFlash flash;
@@ -59,7 +59,7 @@ contract NftMarketTest is Test {
     deployer = vm.envAddress('LOCAL_DEPLOYER');
     vm.startPrank(deployer);
     // myToken = new NBToken(deployer);
-    nftMarket = new NftMarket(address(myToken));
+    nftMarket = new NftMarket(address(myToken), deployer);
 
     // 设立账户
     alicePK = 0xA11CE;
